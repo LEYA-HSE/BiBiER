@@ -170,7 +170,6 @@ dmypy.json
 # Custom
 .gradio/
 data/
-models/
 fonts/
 notebooks/requirements.txt
 project_structure.txt
