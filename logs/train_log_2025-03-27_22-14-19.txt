@@ -1,0 +1,102 @@
+2025-03-27 22:14:19 [INFO] 🚀 === Запуск тренировки (train/dev/test) ===
+2025-03-27 22:14:19 [INFO] === CONFIGURATION ===
+2025-03-27 22:14:19 [INFO] Split: train
+2025-03-27 22:14:19 [INFO] Base Dir: E:\Databases\MELD_new\
+2025-03-27 22:14:19 [INFO] CSV Path: {base_dir}\meld_{split}_labels.csv
+2025-03-27 22:14:19 [INFO] WAV Dir: {base_dir}\wavs\{split}
+2025-03-27 22:14:19 [INFO] Emotion columns: ['neutral', 'happy', 'sad', 'anger', 'surprise', 'disgust', 'fear']
+2025-03-27 22:14:19 [INFO] Sample Rate=16000, Wav Length=4s
+2025-03-27 22:14:19 [INFO] Whisper Model=base, Device=cuda, MaxTokens=15
+2025-03-27 22:14:19 [INFO] use_whisper_for_nontrain_if_no_text=True
+2025-03-27 22:14:19 [INFO] DataLoader: batch_size=16, num_workers=0, shuffle=True
+2025-03-27 22:14:19 [INFO] Random Seed=42
+2025-03-27 22:14:19 [INFO] Merge Probability=0
+2025-03-27 22:14:19 [INFO] --- Embeddings Config ---
+2025-03-27 22:14:19 [INFO] Audio Model: amiriparian/ExHuBERT, Text Model: jinaai/jina-embeddings-v3
+2025-03-27 22:14:19 [INFO] Audio dim=1024, Text dim=1024
+2025-03-27 22:14:19 [INFO] Audio pooling=None, Text pooling=None
+2025-03-27 22:14:19 [INFO] Max tokens=44, Max audio frames=64000
+2025-03-27 22:14:19 [INFO] Emb device=cuda, Normalize=True
+2025-03-27 22:14:19 [INFO] 🔒 Фиксируем random seed: 42
+2025-03-27 22:14:23 [INFO] 📊 Анализ распределения файлов по эмоциям:
+2025-03-27 22:14:23 [INFO] 🎭 Эмоция 'fear': 268 файлов.
+2025-03-27 22:14:23 [INFO] 🎭 Эмоция 'disgust': 271 файлов.
+2025-03-27 22:14:23 [INFO] 🎭 Эмоция 'neutral': 4709 файлов.
+2025-03-27 22:14:23 [INFO] 🎭 Эмоция 'anger': 1109 файлов.
+2025-03-27 22:14:23 [INFO] 🎭 Эмоция 'surprise': 1205 файлов.
+2025-03-27 22:14:23 [INFO] 🎭 Эмоция 'happy': 1743 файлов.
+2025-03-27 22:14:23 [INFO] 🎭 Эмоция 'sad': 683 файлов.
+2025-03-27 22:14:23 [INFO] [DatasetMultiModal] Сплит=train, всего строк: 9988
+2025-03-27 22:14:24 [INFO] 🔗 Всего файлов: 9988, нужно склеить: 0 (0%)
+2025-03-27 22:14:24 [INFO] 🔗 Коротких файлов: 7563, выбрано для склейки: 0
+2025-03-27 22:14:24 [INFO] Инициализация Whisper: модель=base, устройство=cuda
+2025-03-27 22:14:25 [INFO] 📊 Анализ распределения файлов по эмоциям:
+2025-03-27 22:14:25 [INFO] 🎭 Эмоция 'fear': 40 файлов.
+2025-03-27 22:14:25 [INFO] 🎭 Эмоция 'disgust': 22 файлов.
+2025-03-27 22:14:25 [INFO] 🎭 Эмоция 'neutral': 469 файлов.
+2025-03-27 22:14:25 [INFO] 🎭 Эмоция 'anger': 153 файлов.
+2025-03-27 22:14:25 [INFO] 🎭 Эмоция 'surprise': 150 файлов.
+2025-03-27 22:14:25 [INFO] 🎭 Эмоция 'happy': 163 файлов.
+2025-03-27 22:14:25 [INFO] 🎭 Эмоция 'sad': 111 файлов.
+2025-03-27 22:14:25 [INFO] [DatasetMultiModal] Сплит=dev, всего строк: 1108
+2025-03-27 22:14:25 [INFO] 🔗 Всего файлов: 1108, нужно склеить: 0 (0%)
+2025-03-27 22:14:25 [INFO] 🔗 Коротких файлов: 840, выбрано для склейки: 0
+2025-03-27 22:14:25 [INFO] Инициализация Whisper: модель=base, устройство=cuda
+2025-03-27 22:14:27 [INFO] 📊 Анализ распределения файлов по эмоциям:
+2025-03-27 22:14:27 [INFO] 🎭 Эмоция 'fear': 50 файлов.
+2025-03-27 22:14:27 [INFO] 🎭 Эмоция 'disgust': 68 файлов.
+2025-03-27 22:14:27 [INFO] 🎭 Эмоция 'neutral': 1256 файлов.
+2025-03-27 22:14:27 [INFO] 🎭 Эмоция 'anger': 345 файлов.
+2025-03-27 22:14:27 [INFO] 🎭 Эмоция 'surprise': 281 файлов.
+2025-03-27 22:14:27 [INFO] 🎭 Эмоция 'happy': 402 файлов.
+2025-03-27 22:14:27 [INFO] 🎭 Эмоция 'sad': 208 файлов.
+2025-03-27 22:14:27 [INFO] [DatasetMultiModal] Сплит=test, всего строк: 2610
+2025-03-27 22:14:28 [INFO] 🔗 Всего файлов: 2610, нужно склеить: 0 (0%)
+2025-03-27 22:14:28 [INFO] 🔗 Коротких файлов: 1917, выбрано для склейки: 0
+2025-03-27 22:14:28 [INFO] Инициализация Whisper: модель=base, устройство=cuda
+2025-03-27 22:14:29 [WARNING] [Audio] No built-in FeatureExtractor found. Model=amiriparian/ExHuBERT. Error: amiriparian/ExHuBERT does not appear to have a file named preprocessor_config.json. Checkout 'https://huggingface.co/amiriparian/ExHuBERT/tree/main' for available files.
+2025-03-27 22:14:31 [INFO] [Audio] Loaded AutoModel with output_hidden_states=True: amiriparian/ExHuBERT
+2025-03-27 22:14:31 [INFO] [Text] Loading tokenizer for jinaai/jina-embeddings-v3 with trust_remote_code=True
+2025-03-27 22:14:32 [INFO] [Text] Loading model for jinaai/jina-embeddings-v3 with trust_remote_code=True
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:32 [WARNING] flash_attn is not installed. Using PyTorch native attention implementation.
+2025-03-27 22:14:34 [INFO] 
+=== Эпоха 0 ===
+2025-03-27 22:23:11 [INFO] [TRAIN] Loss=1.1551, UAR=0.3169, WAR=0.6115, MF1=0.3298, WF1=0.5588, MEAN=0.4543
+2025-03-27 22:23:32 [INFO] [DEV]   Loss=1.3354, UAR=0.3334, WAR=0.5587, MF1=0.3285, WF1=0.5176, MEAN=0.4345
+2025-03-27 22:24:22 [INFO] [TEST]  Loss=1.2666, UAR=0.3317, WAR=0.5885, MF1=0.3319, WF1=0.5549, MEAN=0.4518
+2025-03-27 22:24:22 [INFO] 
+=== Эпоха 1 ===
+2025-03-27 22:32:53 [INFO] [TRAIN] Loss=0.7741, UAR=0.4964, WAR=0.7469, MF1=0.4973, WF1=0.7245, MEAN=0.6163
+2025-03-27 22:33:14 [INFO] [DEV]   Loss=1.4010, UAR=0.3494, WAR=0.5334, MF1=0.3487, WF1=0.5165, MEAN=0.4370
+2025-03-27 22:34:03 [INFO] [TEST]  Loss=1.3631, UAR=0.3336, WAR=0.5418, MF1=0.3276, WF1=0.5295, MEAN=0.4331
+2025-03-27 22:34:03 [INFO] 
+=== Эпоха 2 ===
+2025-03-27 22:42:35 [INFO] [TRAIN] Loss=0.6455, UAR=0.5730, WAR=0.7878, MF1=0.5871, WF1=0.7737, MEAN=0.6804
+2025-03-27 22:42:56 [INFO] [DEV]   Loss=1.6367, UAR=0.3076, WAR=0.5352, MF1=0.3130, WF1=0.4931, MEAN=0.4122
+2025-03-27 22:43:47 [INFO] [TEST]  Loss=1.5097, UAR=0.3074, WAR=0.5678, MF1=0.3198, WF1=0.5298, MEAN=0.4312
+2025-03-27 22:43:47 [INFO] 
+=== Эпоха 3 ===
