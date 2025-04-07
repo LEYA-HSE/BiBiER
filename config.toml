@@ -1,0 +1,88 @@
+# ---------------------------
+# Основные настройки проекта
+# ---------------------------
+# split = "train"               # "train", "dev", "test"
+base_dir = "home\\evryumina\\data\\MELD\\"         # Корневая директория, где лежат данные
+
+# Пути к данным (используются в config_loader.py)
+csv_path = "{base_dir}\\meld_{split}_labels.csv"
+wav_dir = "{base_dir}\\wavs\\{split}"
+# video_dir = "{base_dir}\\video\\{split}_splits"
+
+# ---------------------------
+# Список модальностей и эмоций
+# ---------------------------
+modalities = ["audio"]
+emotion_columns = ["neutral", "happy", "sad", "anger", "surprise", "disgust", "fear"]
+
+# ---------------------------
+# DataLoader параметры
+# ---------------------------
+[dataloader]
+batch_size = 16
+num_workers = 0
+shuffle = true
+
+# ---------------------------
+# Аудио
+# ---------------------------
+[audio]
+sample_rate = 16000           # Целевая частота дискретизации
+wav_length = 4                # Целевая длина (в секундах) для аудио
+
+[audio_saving]
+save_processed_audio = false
+audio_output_dir = "{base_dir}\\output_wavs"
+
+# ---------------------------
+# Whisper и текст
+# ---------------------------
+[text]
+# Если "csv", то мы стараемся брать текст из CSV, если там есть
+# (поле text_column). Если нет - тогда Whisper (если нужно).
+source = "csv"
+text_column = "text"
+whisper_model = "base"
+
+# Указываем, где запускать Whisper: "cuda" (GPU) или "cpu"
+whisper_device = "cuda"
+
+# Если для dev/test в CSV нет текста, нужно ли всё же вызывать Whisper?
+use_whisper_for_nontrain_if_no_text = true
+
+# ---------------------------
+# Параметры для тренировки
+# ---------------------------
+[train]
+# Если указать random_seed, мы фиксируем seed => воспроизводимые результаты
+random_seed = 42 #  <=0 - рандомная выборка будет каждый раз
+# subset_size = 50 # Если subset_size = 0 или subset_size не указан, значит используем весь датасет без ограничений.
+merge_probability = 0 # процент семплирования коротких файлов.
+hidden_dim = 256 # число скрытых состояний в трансформере
+hidden_dim_gated = 256 # число скрытых состояния в gated
+num_transformer_heads = 4 # число голов в трансформере
+num_graph_heads = 8 # число голов в графе
+tr_layer_number = 1 # число слоев в трансформере
+mode = 'mean' # статистический пуллинг контекстных признаков
+positional_encoding = false # примерение позиционного кодирования признаков
+dropout = 0 # процент отсева нейронов
+out_features = 128 # число классификационных признаков
+lr=1e-4 # скорость обучения
+num_epochs=50 # число эпох обучения
+model_name="MultiModalTransformer_v5" # имя класса модели
+
+[embeddings]
+audio_model = "amiriparian/ExHuBERT"  # Hugging Face имя модели для аудио
+text_model = "jinaai/jina-embeddings-v3"  # Hugging Face имя модели для текста
+
+audio_embedding_dim = 1024  # размерность аудио-эмбеддинга
+text_embedding_dim = 1024   # размерность текст-эмбеддинга
+
+# audio_pooling = "mean"        # "mean", "cls", "max", "min", "last", "attention"
+# text_pooling = "cls"          # "mean", "cls", "max", "min", "last", "sum", "attention"
+
+max_tokens = 44         # ограничение на длину текста (токенов) при токенизации
+max_audio_frames = 64000 # ограничение на длину аудио (семплов) до усечения
+
+device = "cuda"          # "cuda" или "cpu", куда грузить модель
+normalize_output = true  # нормализовать ли вектор L2-нормой

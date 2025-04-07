@@ -1,0 +1,565 @@
+2025-03-12 15:54:27 [INFO] 🚀 === Запуск on-the-fly тренировки ===
+2025-03-12 15:54:27 [INFO] === CONFIGURATION ===
+2025-03-12 15:54:27 [INFO] Split: train
+2025-03-12 15:54:27 [INFO] Base Dir: E:\MELD
+2025-03-12 15:54:27 [INFO] CSV Path: E:\MELD\MELD.Raw\meld_train_labels.csv
+2025-03-12 15:54:27 [INFO] WAV Dir: E:\MELD\wavs\train
+2025-03-12 15:54:27 [INFO] Emotion columns: ['neutral', 'happy', 'sad', 'anger', 'surprise', 'disgust', 'fear']
+2025-03-12 15:54:27 [INFO] Sample Rate=16000, Wav Length=2s
+2025-03-12 15:54:27 [INFO] Whisper Model=tiny, Device=cuda, MaxTokens=15
+2025-03-12 15:54:27 [INFO] use_whisper_for_nontrain_if_no_text=True
+2025-03-12 15:54:27 [INFO] DataLoader: batch_size=1, num_workers=0, shuffle=True
+2025-03-12 15:54:27 [INFO] Random Seed=42
+2025-03-12 15:54:27 [INFO] 🔒 Фиксируем random seed: 42
+2025-03-12 15:54:27 [INFO] [DatasetMultiModal] Используем только первые 50 записей (subset_size=50).
+2025-03-12 15:54:27 [INFO] [DatasetMultiModal] Сплит=train, всего строк: 50
+2025-03-12 15:54:27 [INFO] Инициализация Whisper: модель=tiny, устройство=cuda
+2025-03-12 15:54:29 [INFO] === Эпоха 0 ===
+2025-03-12 15:54:29 [DEBUG] Исходная длина dia4_utt1.wav: 0.13 сек
+2025-03-12 15:54:29 [DEBUG] Паддинг dia4_utt1.wav: +29952 сэмплов
+2025-03-12 15:54:29 [DEBUG] Финальная длина dia4_utt1.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:29 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:29 [INFO] [Epoch=0 Batch=0] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:29 [INFO] Пример текста[0]: Hi!
+2025-03-12 15:54:29 [DEBUG] Исходная длина dia0_utt8.wav: 0.96 сек
+2025-03-12 15:54:29 [DEBUG] Склеиваем dia0_utt8.wav с dia3_utt5.wav
+2025-03-12 15:54:29 [DEBUG] Финальная длина dia0_utt8.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:29 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:31 [INFO] [Epoch=0 Batch=1] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:31 [INFO] Пример текста[0]: Good to know now that I've touched you
+2025-03-12 15:54:31 [DEBUG] Исходная длина dia2_utt4.wav: 1.02 сек
+2025-03-12 15:54:31 [DEBUG] Склеиваем dia2_utt4.wav с dia0_utt12.wav
+2025-03-12 15:54:31 [DEBUG] Финальная длина dia2_utt4.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:31 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:31 [INFO] [Epoch=0 Batch=2] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:31 [INFO] Пример текста[0]: No way! Really?
+2025-03-12 15:54:31 [DEBUG] Исходная длина dia3_utt9.wav: 1.51 сек
+2025-03-12 15:54:31 [DEBUG] Склеиваем dia3_utt9.wav с dia0_utt0.wav
+2025-03-12 15:54:31 [DEBUG] Финальная длина dia3_utt9.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:31 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:31 [INFO] [Epoch=0 Batch=3] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:31 [INFO] Пример текста[0]: Dude, 멀쩲
+2025-03-12 15:54:31 [DEBUG] Исходная длина dia0_utt6.wav: 3.09 сек
+2025-03-12 15:54:31 [DEBUG] Финальная длина dia0_utt6.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:31 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:31 [INFO] [Epoch=0 Batch=4] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:31 [INFO] Пример текста[0]: I see.
+2025-03-12 15:54:31 [DEBUG] Исходная длина dia2_utt11.wav: 1.17 сек
+2025-03-12 15:54:31 [DEBUG] Склеиваем dia2_utt11.wav с dia4_utt4.wav
+2025-03-12 15:54:31 [DEBUG] Финальная длина dia2_utt11.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:31 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:31 [INFO] [Epoch=0 Batch=5] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:31 [INFO] Пример текста[0]: Is it the Italian guy?
+2025-03-12 15:54:31 [DEBUG] Исходная длина dia2_utt6.wav: 4.80 сек
+2025-03-12 15:54:31 [DEBUG] Финальная длина dia2_utt6.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:31 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:31 [INFO] [Epoch=0 Batch=6] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:31 [INFO] Пример текста[0]: Just coffee! Where are we gonna hang out now?
+2025-03-12 15:54:31 [DEBUG] Исходная длина dia1_utt8.wav: 2.01 сек
+2025-03-12 15:54:31 [DEBUG] Финальная длина dia1_utt8.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:31 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:31 [INFO] [Epoch=0 Batch=7] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:31 [INFO] Пример текста[0]: Yeah, sure!
+2025-03-12 15:54:31 [DEBUG] Исходная длина dia4_utt2.wav: 1.13 сек
+2025-03-12 15:54:31 [DEBUG] Склеиваем dia4_utt2.wav с dia2_utt4.wav
+2025-03-12 15:54:31 [DEBUG] Финальная длина dia4_utt2.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:31 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=8] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: No way!
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia2_utt7.wav: 2.69 сек
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia2_utt7.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:32 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=9] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: Got me.
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia1_utt1.wav: 2.22 сек
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia1_utt1.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:32 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=10] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: You know? Forget it!
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia2_utt8.wav: 0.64 сек
+2025-03-12 15:54:32 [DEBUG] Склеиваем dia2_utt8.wav с dia0_utt9.wav
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia2_utt8.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:32 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=11] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: I get beer.
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia3_utt4.wav: 2.84 сек
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia3_utt4.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:32 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=12] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: Look,  'My vessel so empty with nothing inside.
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia0_utt10.wav: 2.01 сек
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia0_utt10.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:32 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=13] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: No dont I beg of you!
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia0_utt4.wav: 6.49 сек
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia0_utt4.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:32 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=14] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: My duties?  All right.
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia4_utt6.wav: 0.26 сек
+2025-03-12 15:54:32 [DEBUG] Склеиваем dia4_utt6.wav с dia0_utt11.wav
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia4_utt6.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:32 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=15] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: All right.
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia2_utt9.wav: 1.96 сек
+2025-03-12 15:54:32 [DEBUG] Склеиваем dia2_utt9.wav с dia0_utt5.wav
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia2_utt9.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:32 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=16] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: Please. Hey, did you pick a roommate?
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia3_utt8.wav: 2.75 сек
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia3_utt8.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:32 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=17] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: Oh, totally. Oh, God, oh, she seemed so happy too.
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia2_utt2.wav: 1.83 сек
+2025-03-12 15:54:32 [DEBUG] Склеиваем dia2_utt2.wav с dia2_utt10.wav
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia2_utt2.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:32 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=18] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: Do I ever?
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia0_utt2.wav: 2.94 сек
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia0_utt2.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:32 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=19] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: That I did. That I did.
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia3_utt2.wav: 1.19 сек
+2025-03-12 15:54:32 [DEBUG] Склеиваем dia3_utt2.wav с dia4_utt0.wav
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia3_utt2.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:32 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=20] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: What?
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia4_utt5.wav: 0.09 сек
+2025-03-12 15:54:32 [DEBUG] Склеиваем dia4_utt5.wav с dia0_utt3.wav
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia4_utt5.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:32 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=21] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: So let's talk a little bit about you.
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia2_utt12.wav: 1.22 сек
+2025-03-12 15:54:32 [DEBUG] Склеиваем dia2_utt12.wav с dia2_utt10.wav
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia2_utt12.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:32 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:32 [INFO] [Epoch=0 Batch=22] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:32 [INFO] Пример текста[0]: Hmm, yeah, right, you betcha
+2025-03-12 15:54:32 [DEBUG] Исходная длина dia0_utt1.wav: 1.47 сек
+2025-03-12 15:54:32 [DEBUG] Склеиваем dia0_utt1.wav с dia0_utt2.wav
+2025-03-12 15:54:32 [DEBUG] Финальная длина dia0_utt1.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:32 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=23] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: Most of it your hands full.
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia0_utt12.wav: 3.05 сек
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia0_utt12.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:33 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=24] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: Really?!
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia0_utt0.wav: 5.67 сек
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia0_utt0.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:33 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=25] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: also I was the point person on my companys transition from the KL-5 to GR-6 system.
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia1_utt5.wav: 1.47 сек
+2025-03-12 15:54:33 [DEBUG] Склеиваем dia1_utt5.wav с dia0_utt0.wav
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia1_utt5.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:33 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=26] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: Also, I...
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia1_utt2.wav: 4.76 сек
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia1_utt2.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:33 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=27] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: No-no-no-no, no! Who, who were you talking about?
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia0_utt13.wav: 3.14 сек
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia0_utt13.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:33 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=28] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: Absolutely.  You can relax
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia0_utt5.wav: 3.22 сек
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia0_utt5.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:33 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=29] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: Now youll be heading a whole division, so youll have a lot of duties.
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia2_utt10.wav: 0.81 сек
+2025-03-12 15:54:33 [DEBUG] Склеиваем dia2_utt10.wav с dia2_utt2.wav
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia2_utt10.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:33 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=30] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: You betcha. Do I ever
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia3_utt5.wav: 2.92 сек
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia3_utt5.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:33 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=31] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: Now that I've touched you, you seem emptier still.'
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia4_utt0.wav: 0.94 сек
+2025-03-12 15:54:33 [DEBUG] Склеиваем dia4_utt0.wav с dia1_utt2.wav
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia4_utt0.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:33 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=32] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: Bye. You're not forget.
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia3_utt3.wav: 2.43 сек
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia3_utt3.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:33 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=33] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: He was with her when he wrote this poem.
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia0_utt9.wav: 2.22 сек
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia0_utt9.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:33 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=34] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: We can go into detail
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia3_utt6.wav: 2.92 сек
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia3_utt6.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:33 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=35] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: He thinks Monica is empty, she is the empty vase!
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia2_utt0.wav: 1.09 сек
+2025-03-12 15:54:33 [DEBUG] Склеиваем dia2_utt0.wav с dia0_utt8.wav
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia2_utt0.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:33 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:33 [INFO] [Epoch=0 Batch=36] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:33 [INFO] Пример текста[0]: very much. Good to know.
+2025-03-12 15:54:33 [DEBUG] Исходная длина dia4_utt4.wav: 1.34 сек
+2025-03-12 15:54:33 [DEBUG] Склеиваем dia4_utt4.wav с dia2_utt5.wav
+2025-03-12 15:54:33 [DEBUG] Финальная длина dia4_utt4.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:33 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:34 [INFO] [Epoch=0 Batch=37] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:34 [INFO] Пример текста[0]: 건데 Battle
+2025-03-12 15:54:34 [DEBUG] Исходная длина dia1_utt3.wav: 2.52 сек
+2025-03-12 15:54:34 [DEBUG] Финальная длина dia1_utt3.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:34 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:34 [INFO] [Epoch=0 Batch=38] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:34 [INFO] Пример текста[0]: No, I-I-I-I don't, I actually don't know
+2025-03-12 15:54:34 [DEBUG] Исходная длина dia3_utt0.wav: 2.35 сек
+2025-03-12 15:54:34 [DEBUG] Финальная длина dia3_utt0.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:34 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:34 [INFO] [Epoch=0 Batch=39] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:34 [INFO] Пример текста[0]: Oh my God, oh my God! Poor Monica!
+2025-03-12 15:54:34 [DEBUG] Исходная длина dia2_utt3.wav: 1.69 сек
+2025-03-12 15:54:34 [DEBUG] Склеиваем dia2_utt3.wav с dia3_utt8.wav
+2025-03-12 15:54:34 [DEBUG] Финальная длина dia2_utt3.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:34 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:34 [INFO] [Epoch=0 Batch=40] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:34 [INFO] Пример текста[0]: Chris says they're closing down the bar.
+2025-03-12 15:54:34 [DEBUG] Исходная длина dia0_utt3.wav: 2.77 сек
+2025-03-12 15:54:34 [DEBUG] Финальная длина dia0_utt3.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:34 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:34 [INFO] [Epoch=0 Batch=41] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:34 [INFO] Пример текста[0]: So lets talk a little bit about your duties.
+2025-03-12 15:54:34 [DEBUG] Исходная длина dia1_utt0.wav: 2.47 сек
+2025-03-12 15:54:34 [DEBUG] Финальная длина dia1_utt0.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:34 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:34 [INFO] [Epoch=0 Batch=42] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:34 [INFO] Пример текста[0]: But then who? The waitress I went out with last month?
+2025-03-12 15:54:34 [DEBUG] Исходная длина dia4_utt3.wav: 2.75 сек
+2025-03-12 15:54:34 [DEBUG] Финальная длина dia4_utt3.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:34 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:34 [INFO] [Epoch=0 Batch=43] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:34 [INFO] Пример текста[0]: Ah y'know, this building is on my paper route so I...
+2025-03-12 15:54:34 [DEBUG] Исходная длина dia0_utt11.wav: 8.32 сек
+2025-03-12 15:54:34 [DEBUG] Финальная длина dia0_utt11.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:34 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:34 [INFO] [Epoch=0 Batch=44] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:34 [INFO] Пример текста[0]: All right then, well have a definite answer for you on Monday, but I think I can say with some confidence, youll fit in well here.
+2025-03-12 15:54:34 [DEBUG] Исходная длина dia3_utt1.wav: 1.13 сек
+2025-03-12 15:54:34 [DEBUG] Склеиваем dia3_utt1.wav с dia0_utt4.wav
+2025-03-12 15:54:34 [DEBUG] Финальная длина dia3_utt1.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:34 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:34 [INFO] [Epoch=0 Batch=45] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:34 [INFO] Пример текста[0]: What? What? What? My duties?
+2025-03-12 15:54:34 [DEBUG] Исходная длина dia2_utt5.wav: 2.22 сек
+2025-03-12 15:54:34 [DEBUG] Финальная длина dia2_utt5.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:34 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:34 [INFO] [Epoch=0 Batch=46] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:34 [INFO] Пример текста[0]: Yeah, apparently theyre turning it into some kinda coffee place.
+2025-03-12 15:54:34 [DEBUG] Исходная длина dia2_utt1.wav: 1.45 сек
+2025-03-12 15:54:34 [DEBUG] Склеиваем dia2_utt1.wav с dia2_utt9.wav
+2025-03-12 15:54:34 [DEBUG] Финальная длина dia2_utt1.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:34 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:34 [INFO] [Epoch=0 Batch=47] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:34 [INFO] Пример текста[0]: You want to hear something good sucks? Please.
+2025-03-12 15:54:34 [DEBUG] Исходная длина dia0_utt7.wav: 5.72 сек
+2025-03-12 15:54:34 [DEBUG] Финальная длина dia0_utt7.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:34 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:34 [INFO] [Epoch=0 Batch=48] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:34 [INFO] Пример текста[0]: But therell be perhaps 30 people under you so you can dump a certain amount on them.
+2025-03-12 15:54:34 [DEBUG] Исходная длина dia1_utt4.wav: 1.17 сек
+2025-03-12 15:54:34 [DEBUG] Склеиваем dia1_utt4.wav с dia0_utt7.wav
+2025-03-12 15:54:34 [DEBUG] Финальная длина dia1_utt4.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:34 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:35 [INFO] [Epoch=0 Batch=49] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:35 [INFO] Пример текста[0]: 謝謝
+2025-03-12 15:54:35 [INFO] === Эпоха 1 ===
+2025-03-12 15:54:35 [DEBUG] Исходная длина dia3_utt2.wav: 1.19 сек
+2025-03-12 15:54:35 [DEBUG] Склеиваем dia3_utt2.wav с dia4_utt0.wav
+2025-03-12 15:54:35 [DEBUG] Финальная длина dia3_utt2.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:35 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:35 [INFO] [Epoch=1 Batch=0] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:35 [INFO] Пример текста[0]: What?
+2025-03-12 15:54:35 [DEBUG] Исходная длина dia2_utt0.wav: 1.09 сек
+2025-03-12 15:54:35 [DEBUG] Склеиваем dia2_utt0.wav с dia1_utt8.wav
+2025-03-12 15:54:35 [DEBUG] Финальная длина dia2_utt0.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:35 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:35 [INFO] [Epoch=1 Batch=1] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:35 [INFO] Пример текста[0]: very much. Yeah sure.
+2025-03-12 15:54:35 [DEBUG] Исходная длина dia4_utt4.wav: 1.34 сек
+2025-03-12 15:54:35 [DEBUG] Склеиваем dia4_utt4.wav с dia0_utt8.wav
+2025-03-12 15:54:35 [DEBUG] Финальная длина dia4_utt4.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:35 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:35 [INFO] [Epoch=1 Batch=2] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:35 [INFO] Пример текста[0]: Go to sleep, go to sleep
+2025-03-12 15:54:35 [DEBUG] Исходная длина dia2_utt3.wav: 1.69 сек
+2025-03-12 15:54:35 [DEBUG] Склеиваем dia2_utt3.wav с dia2_utt7.wav
+2025-03-12 15:54:35 [DEBUG] Финальная длина dia2_utt3.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:35 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:35 [INFO] [Epoch=1 Batch=3] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:35 [INFO] Пример текста[0]: Chris says they're closing down the bar.
+2025-03-12 15:54:35 [DEBUG] Исходная длина dia3_utt8.wav: 2.75 сек
+2025-03-12 15:54:35 [DEBUG] Финальная длина dia3_utt8.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:35 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:35 [INFO] [Epoch=1 Batch=4] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:35 [INFO] Пример текста[0]: Oh, totally. Oh, God, oh, she seemed so happy too.
+2025-03-12 15:54:35 [DEBUG] Исходная длина dia3_utt0.wav: 2.35 сек
+2025-03-12 15:54:35 [DEBUG] Финальная длина dia3_utt0.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:35 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:35 [INFO] [Epoch=1 Batch=5] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:35 [INFO] Пример текста[0]: Oh my God, oh my God! Poor Monica!
+2025-03-12 15:54:35 [DEBUG] Исходная длина dia2_utt5.wav: 2.22 сек
+2025-03-12 15:54:35 [DEBUG] Финальная длина dia2_utt5.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:35 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:35 [INFO] [Epoch=1 Batch=6] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:35 [INFO] Пример текста[0]: Yeah, apparently theyre turning it into some kinda coffee place.
+2025-03-12 15:54:35 [DEBUG] Исходная длина dia2_utt6.wav: 4.80 сек
+2025-03-12 15:54:35 [DEBUG] Финальная длина dia2_utt6.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:35 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:35 [INFO] [Epoch=1 Batch=7] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:35 [INFO] Пример текста[0]: Just coffee! Where are we gonna hang out now?
+2025-03-12 15:54:35 [DEBUG] Исходная длина dia1_utt1.wav: 2.22 сек
+2025-03-12 15:54:35 [DEBUG] Финальная длина dia1_utt1.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:35 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:35 [INFO] [Epoch=1 Batch=8] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:35 [INFO] Пример текста[0]: You know? Forget it!
+2025-03-12 15:54:35 [DEBUG] Исходная длина dia4_utt0.wav: 0.94 сек
+2025-03-12 15:54:35 [DEBUG] Склеиваем dia4_utt0.wav с dia3_utt0.wav
+2025-03-12 15:54:35 [DEBUG] Финальная длина dia4_utt0.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:35 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:36 [INFO] [Epoch=1 Batch=9] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:36 [INFO] Пример текста[0]: Hey, you got my God. Oh my God
+2025-03-12 15:54:36 [DEBUG] Исходная длина dia0_utt12.wav: 3.05 сек
+2025-03-12 15:54:36 [DEBUG] Финальная длина dia0_utt12.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:36 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:36 [INFO] [Epoch=1 Batch=10] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:36 [INFO] Пример текста[0]: Really?!
+2025-03-12 15:54:36 [DEBUG] Исходная длина dia2_utt1.wav: 1.45 сек
+2025-03-12 15:54:36 [DEBUG] Склеиваем dia2_utt1.wav с dia0_utt0.wav
+2025-03-12 15:54:36 [DEBUG] Финальная длина dia2_utt1.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:36 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:36 [INFO] [Epoch=1 Batch=11] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:36 [INFO] Пример текста[0]: Do you want to hear something good sucks? I'll show up.
+2025-03-12 15:54:36 [DEBUG] Исходная длина dia0_utt3.wav: 2.77 сек
+2025-03-12 15:54:36 [DEBUG] Финальная длина dia0_utt3.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:36 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:36 [INFO] [Epoch=1 Batch=12] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:36 [INFO] Пример текста[0]: So lets talk a little bit about your duties.
+2025-03-12 15:54:36 [DEBUG] Исходная длина dia1_utt8.wav: 2.01 сек
+2025-03-12 15:54:36 [DEBUG] Финальная длина dia1_utt8.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:36 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:36 [INFO] [Epoch=1 Batch=13] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:36 [INFO] Пример текста[0]: Yeah, sure!
+2025-03-12 15:54:36 [DEBUG] Исходная длина dia2_utt2.wav: 1.83 сек
+2025-03-12 15:54:36 [DEBUG] Склеиваем dia2_utt2.wav с dia2_utt10.wav
+2025-03-12 15:54:36 [DEBUG] Финальная длина dia2_utt2.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:36 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:36 [INFO] [Epoch=1 Batch=14] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:36 [INFO] Пример текста[0]: Do I ever?
+2025-03-12 15:54:36 [DEBUG] Исходная длина dia3_utt3.wav: 2.43 сек
+2025-03-12 15:54:36 [DEBUG] Финальная длина dia3_utt3.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:36 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:36 [INFO] [Epoch=1 Batch=15] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:36 [INFO] Пример текста[0]: He was with her when he wrote this poem.
+2025-03-12 15:54:36 [DEBUG] Исходная длина dia4_utt2.wav: 1.13 сек
+2025-03-12 15:54:36 [DEBUG] Склеиваем dia4_utt2.wav с dia3_utt1.wav
+2025-03-12 15:54:36 [DEBUG] Финальная длина dia4_utt2.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:36 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:37 [INFO] [Epoch=1 Batch=16] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:37 [INFO] Пример текста[0]: the
+2025-03-12 15:54:37 [DEBUG] Исходная длина dia1_utt0.wav: 2.47 сек
+2025-03-12 15:54:37 [DEBUG] Финальная длина dia1_utt0.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:37 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:37 [INFO] [Epoch=1 Batch=17] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:37 [INFO] Пример текста[0]: But then who? The waitress I went out with last month?
+2025-03-12 15:54:37 [DEBUG] Исходная длина dia3_utt9.wav: 1.51 сек
+2025-03-12 15:54:37 [DEBUG] Склеиваем dia3_utt9.wav с dia0_utt13.wav
+2025-03-12 15:54:37 [DEBUG] Финальная длина dia3_utt9.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:37 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:37 [INFO] [Epoch=1 Batch=18] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:37 [INFO] Пример текста[0]: It's Summer!
+2025-03-12 15:54:37 [DEBUG] Исходная длина dia0_utt10.wav: 2.01 сек
+2025-03-12 15:54:37 [DEBUG] Финальная длина dia0_utt10.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:37 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:37 [INFO] [Epoch=1 Batch=19] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:37 [INFO] Пример текста[0]: No dont I beg of you!
+2025-03-12 15:54:37 [DEBUG] Исходная длина dia2_utt11.wav: 1.17 сек
+2025-03-12 15:54:37 [DEBUG] Склеиваем dia2_utt11.wav с dia0_utt9.wav
+2025-03-12 15:54:37 [DEBUG] Финальная длина dia2_utt11.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:37 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:37 [INFO] [Epoch=1 Batch=20] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:37 [INFO] Пример текста[0]: Is it the Italian guy?
+2025-03-12 15:54:37 [DEBUG] Исходная длина dia0_utt11.wav: 8.32 сек
+2025-03-12 15:54:37 [DEBUG] Финальная длина dia0_utt11.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:37 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:37 [INFO] [Epoch=1 Batch=21] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:37 [INFO] Пример текста[0]: All right then, well have a definite answer for you on Monday, but I think I can say with some confidence, youll fit in well here.
+2025-03-12 15:54:37 [DEBUG] Исходная длина dia3_utt6.wav: 2.92 сек
+2025-03-12 15:54:37 [DEBUG] Финальная длина dia3_utt6.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:37 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:37 [INFO] [Epoch=1 Batch=22] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:37 [INFO] Пример текста[0]: He thinks Monica is empty, she is the empty vase!
+2025-03-12 15:54:37 [DEBUG] Исходная длина dia1_utt2.wav: 4.76 сек
+2025-03-12 15:54:37 [DEBUG] Финальная длина dia1_utt2.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:37 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:37 [INFO] [Epoch=1 Batch=23] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:37 [INFO] Пример текста[0]: No-no-no-no, no! Who, who were you talking about?
+2025-03-12 15:54:37 [DEBUG] Исходная длина dia4_utt3.wav: 2.75 сек
+2025-03-12 15:54:37 [DEBUG] Финальная длина dia4_utt3.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:37 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:37 [INFO] [Epoch=1 Batch=24] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:37 [INFO] Пример текста[0]: Ah y'know, this building is on my paper route so I...
+2025-03-12 15:54:37 [DEBUG] Исходная длина dia3_utt4.wav: 2.84 сек
+2025-03-12 15:54:37 [DEBUG] Финальная длина dia3_utt4.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:37 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:37 [INFO] [Epoch=1 Batch=25] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:37 [INFO] Пример текста[0]: Look,  'My vessel so empty with nothing inside.
+2025-03-12 15:54:37 [DEBUG] Исходная длина dia3_utt5.wav: 2.92 сек
+2025-03-12 15:54:37 [DEBUG] Финальная длина dia3_utt5.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:37 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:37 [INFO] [Epoch=1 Batch=26] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:37 [INFO] Пример текста[0]: Now that I've touched you, you seem emptier still.'
+2025-03-12 15:54:37 [DEBUG] Исходная длина dia2_utt4.wav: 1.02 сек
+2025-03-12 15:54:37 [DEBUG] Склеиваем dia2_utt4.wav с dia1_utt0.wav
+2025-03-12 15:54:37 [DEBUG] Финальная длина dia2_utt4.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:37 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=27] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: No wait. The waitress I want.
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia0_utt13.wav: 3.14 сек
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia0_utt13.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:38 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=28] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: Absolutely.  You can relax
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia4_utt6.wav: 0.26 сек
+2025-03-12 15:54:38 [DEBUG] Склеиваем dia4_utt6.wav с dia0_utt9.wav
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia4_utt6.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:38 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=29] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: We could go ahead.
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia0_utt2.wav: 2.94 сек
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia0_utt2.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:38 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=30] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: That I did. That I did.
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia4_utt5.wav: 0.09 сек
+2025-03-12 15:54:38 [DEBUG] Склеиваем dia4_utt5.wav с dia2_utt5.wav
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia4_utt5.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:38 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=31] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: I'm really there turning it into some kind of coffee.
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia2_utt10.wav: 0.81 сек
+2025-03-12 15:54:38 [DEBUG] Склеиваем dia2_utt10.wav с dia2_utt2.wav
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia2_utt10.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:38 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=32] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: You betcha. Do I ever
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia0_utt8.wav: 0.96 сек
+2025-03-12 15:54:38 [DEBUG] Склеиваем dia0_utt8.wav с dia0_utt2.wav
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia0_utt8.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:38 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=33] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: Good to know that I did
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia2_utt7.wav: 2.69 сек
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia2_utt7.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:38 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=34] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: Got me.
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia1_utt4.wav: 1.17 сек
+2025-03-12 15:54:38 [DEBUG] Склеиваем dia1_utt4.wav с dia1_utt8.wav
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia1_utt4.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:38 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=35] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: Okay, they're usher
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia4_utt1.wav: 0.13 сек
+2025-03-12 15:54:38 [DEBUG] Паддинг dia4_utt1.wav: +29952 сэмплов
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia4_utt1.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:38 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=36] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: Hi!
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia2_utt9.wav: 1.96 сек
+2025-03-12 15:54:38 [DEBUG] Склеиваем dia2_utt9.wav с dia0_utt3.wav
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia2_utt9.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:38 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=37] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: Please. Hey, did you pick a roommate?
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia0_utt0.wav: 5.67 сек
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia0_utt0.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:38 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=38] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: also I was the point person on my companys transition from the KL-5 to GR-6 system.
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia0_utt7.wav: 5.72 сек
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia0_utt7.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:38 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=39] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: But therell be perhaps 30 people under you so you can dump a certain amount on them.
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia1_utt5.wav: 1.47 сек
+2025-03-12 15:54:38 [DEBUG] Склеиваем dia1_utt5.wav с dia1_utt4.wav
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia1_utt5.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:38 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=40] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: 타� proton
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia1_utt3.wav: 2.52 сек
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia1_utt3.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:38 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=41] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: No, I-I-I-I don't, I actually don't know
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia0_utt6.wav: 3.09 сек
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia0_utt6.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:38 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=42] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: I see.
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia0_utt1.wav: 1.47 сек
+2025-03-12 15:54:38 [DEBUG] Склеиваем dia0_utt1.wav с dia1_utt5.wav
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia0_utt1.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:38 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:38 [INFO] [Epoch=1 Batch=43] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:38 [INFO] Пример текста[0]: Most of it your hands full.
+2025-03-12 15:54:38 [DEBUG] Исходная длина dia3_utt1.wav: 1.13 сек
+2025-03-12 15:54:38 [DEBUG] Склеиваем dia3_utt1.wav с dia4_utt2.wav
+2025-03-12 15:54:38 [DEBUG] Финальная длина dia3_utt1.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:38 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:39 [INFO] [Epoch=1 Batch=44] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:39 [INFO] Пример текста[0]: What, what, what, what, what?
+2025-03-12 15:54:39 [DEBUG] Исходная длина dia0_utt4.wav: 6.49 сек
+2025-03-12 15:54:39 [DEBUG] Финальная длина dia0_utt4.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:39 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:39 [INFO] [Epoch=1 Batch=45] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:39 [INFO] Пример текста[0]: My duties?  All right.
+2025-03-12 15:54:39 [DEBUG] Исходная длина dia0_utt9.wav: 2.22 сек
+2025-03-12 15:54:39 [DEBUG] Финальная длина dia0_utt9.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:39 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:39 [INFO] [Epoch=1 Batch=46] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:39 [INFO] Пример текста[0]: We can go into detail
+2025-03-12 15:54:39 [DEBUG] Исходная длина dia2_utt8.wav: 0.64 сек
+2025-03-12 15:54:39 [DEBUG] Склеиваем dia2_utt8.wav с dia0_utt11.wav
+2025-03-12 15:54:39 [DEBUG] Финальная длина dia2_utt8.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:39 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:39 [INFO] [Epoch=1 Batch=47] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:39 [INFO] Пример текста[0]: Pretty big.
+2025-03-12 15:54:39 [DEBUG] Исходная длина dia0_utt5.wav: 3.22 сек
+2025-03-12 15:54:39 [DEBUG] Финальная длина dia0_utt5.wav: 2.00 сек; was_merged=False
+2025-03-12 15:54:39 [DEBUG] Текст: используем csv_text (не пуст).
+2025-03-12 15:54:39 [INFO] [Epoch=1 Batch=48] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:39 [INFO] Пример текста[0]: Now youll be heading a whole division, so youll have a lot of duties.
+2025-03-12 15:54:39 [DEBUG] Исходная длина dia2_utt12.wav: 1.22 сек
+2025-03-12 15:54:39 [DEBUG] Склеиваем dia2_utt12.wav с dia2_utt2.wav
+2025-03-12 15:54:39 [DEBUG] Финальная длина dia2_utt12.wav: 2.00 сек; was_merged=True
+2025-03-12 15:54:39 [DEBUG] Текст: вызываем Whisper (так как была склейка).
+2025-03-12 15:54:39 [INFO] [Epoch=1 Batch=49] audio_shape=torch.Size([1, 1, 32000]), label_shape=torch.Size([1, 7])
+2025-03-12 15:54:39 [INFO] Пример текста[0]: Hmm, yeah, right, do it
+2025-03-12 15:54:39 [INFO] ✅ Тренировка завершена.
