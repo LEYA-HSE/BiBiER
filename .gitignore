@@ -178,3 +178,6 @@ db/
 logs/
 .old/
 .logs/
+results_greedy_*/
+modules/
+hub/

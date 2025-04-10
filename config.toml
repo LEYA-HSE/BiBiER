@@ -2,7 +2,7 @@
 # Основные настройки проекта
 # ---------------------------
 # split = "train"               # "train", "dev", "test"
-base_dir = "home\\evryumina\\data\\MELD\\"         # Корневая директория, где лежат данные
+base_dir = "E:\\MELD"         # Корневая директория, где лежат данные
 
 # Пути к данным (используются в config_loader.py)
 csv_path = "{base_dir}\\meld_{split}_labels.csv"
@@ -19,7 +19,7 @@ emotion_columns = ["neutral", "happy", "sad", "anger", "surprise", "disgust", "f
 # DataLoader параметры
 # ---------------------------
 [dataloader]
-batch_size = 16
+batch_size = 8
 num_workers = 0
 shuffle = true
 
@@ -56,20 +56,21 @@ use_whisper_for_nontrain_if_no_text = true
 [train]
 # Если указать random_seed, мы фиксируем seed => воспроизводимые результаты
 random_seed = 42 #  <=0 - рандомная выборка будет каждый раз
-# subset_size = 50 # Если subset_size = 0 или subset_size не указан, значит используем весь датасет без ограничений.
+subset_size = 20 # Если subset_size = 0 или subset_size не указан, значит используем весь датасет без ограничений.
 merge_probability = 0 # процент семплирования коротких файлов.
-hidden_dim = 256 # число скрытых состояний в трансформере
-hidden_dim_gated = 256 # число скрытых состояния в gated
-num_transformer_heads = 4 # число голов в трансформере
-num_graph_heads = 8 # число голов в графе
+hidden_dim = 128 # число скрытых состояний в трансформере
+hidden_dim_gated = 128 # число скрытых состояния в gated
+num_transformer_heads = 2 # число голов в трансформере
+num_graph_heads = 2 # число голов в графе
 tr_layer_number = 1 # число слоев в трансформере
 mode = 'mean' # статистический пуллинг контекстных признаков
 positional_encoding = false # примерение позиционного кодирования признаков
 dropout = 0 # процент отсева нейронов
 out_features = 128 # число классификационных признаков
-lr=1e-4 # скорость обучения
-num_epochs=50 # число эпох обучения
-model_name="MultiModalTransformer_v5" # имя класса модели
+lr = 1e-4 # скорость обучения
+num_epochs = 2 # число эпох обучения
+model_name = "BiFormer" # имя класса модели BiGraphFormer BiFormer BiGatedGraphFormer
+max_patience = 10 # Параметр ранней остановки обучения
 
 [embeddings]
 audio_model = "amiriparian/ExHuBERT"  # Hugging Face имя модели для аудио

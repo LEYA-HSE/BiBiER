@@ -78,8 +78,11 @@ class ConfigLoader:
         self.out_features = train_cfg.get("out_features", 128)
         self.lr = train_cfg.get("lr", 1e-4)
         self.num_epochs = train_cfg.get("num_epochs", 100)
-        self.model_name=train_cfg.get("model_name", "MultiModalTransformer_v3")
+        self.model_name=train_cfg.get("model_name", "BiFormer")
         self.tr_layer_number=train_cfg.get("tr_layer_number", 1)
+        self.max_patience=train_cfg.get("max_patience", 10)
+
+
 
         # ---------------------------
         # Embeddings
@@ -131,6 +134,7 @@ class ConfigLoader:
         logging.info(f"LR: {self.lr}")
         logging.info(f"Num Epochs: {self.num_epochs}")
         logging.info(f"Merge Probability={self.merge_probability}")
+        logging.info(f"Max Patience={self.max_patience}")
 
         # Логируем embeddings
         logging.info("--- Embeddings Config ---")
