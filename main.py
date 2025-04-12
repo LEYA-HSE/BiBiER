@@ -4,6 +4,7 @@ import logging
 import os
 import shutil
 import datetime
+# os.environ["HF_HOME"] = "models"
 
 from utils.config_loader import ConfigLoader
 from utils.logger_setup import setup_logger
@@ -31,10 +32,20 @@ def main():
     #  Файл, куда будет писать наш жадный поиск
     overrides_file = os.path.join(results_dir, "overrides.txt")
 
-    #  Делаем датасеты/лоадеры
+    # Делаем датасеты/лоадеры
+    # Общий train_loader
     _, train_loader = make_dataset_and_loader(base_config, "train")
-    _, dev_loader   = make_dataset_and_loader(base_config, "dev")
-    _, test_loader  = make_dataset_and_loader(base_config, "test")
+
+    # Раздельные dev/test
+    dev_loaders = []
+    test_loaders = []
+
+    for dataset_name in base_config.datasets:
+        _, dev_loader = make_dataset_and_loader(base_config, "dev", only_dataset=dataset_name)
+        _, test_loader = make_dataset_and_loader(base_config, "test", only_dataset=dataset_name)
+
+        dev_loaders.append((dataset_name, dev_loader))
+        test_loaders.append((dataset_name, test_loader))
 
     #    Если хотим просто один раз обучить (без перебора),
     #    Можно вызвать train_once(base_config, train_loader, dev_loader, test_loader) напрямую.
@@ -42,18 +53,18 @@ def main():
     # Или же запустить жадный перебор гиперпараметров:
     param_grid = {
         "hidden_dim":             [128, 256, 512],
-        # "hidden_dim_gated":       [128, 256, 512],
+        "hidden_dim_gated":       [128, 256, 512],
         "num_transformer_heads":  [2, 4, 8],
         "tr_layer_number":        [1, 2, 3],
-        "out_features":           [128, 256, 512],
+        # "out_features":           [128, 256, 512],
         # "num_graph_heads":        [2, 4, 8]
     }
     default_values = {
         "hidden_dim":             128,
-        # "hidden_dim_gated":       128,
+        "hidden_dim_gated":       128,
         "num_transformer_heads":  2,
         "tr_layer_number":        1,
-        "out_features":           128,
+        # "out_features":           128,
         # "num_graph_heads":        2
     }
 
@@ -61,8 +72,8 @@ def main():
     greedy_search(
         base_config       = base_config,
         train_loader      = train_loader,
-        dev_loader        = dev_loader,
-        test_loader       = test_loader,
+        dev_loader        = dev_loaders,
+        test_loader       = test_loaders,
         train_fn          = train_once,
         overrides_file    = overrides_file,
         param_grid        = param_grid,

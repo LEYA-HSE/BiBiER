@@ -9,13 +9,14 @@ import datetime
 import numpy as np
 from tqdm import tqdm
 
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, ConcatDataset
 from utils.losses import WeightedCrossEntropyLoss
 from utils.measures import uar, war, mf1, wf1
 from utils.logger_setup import setup_logger
 from models.models import BiFormer, BiGraphFormer, BiGatedGraphFormer
 from data_loading.dataset_multimodal import DatasetMultiModal
 from data_loading.feature_extractor import AudioEmbeddingExtractor, TextEmbeddingExtractor
+from sklearn.utils.class_weight import compute_class_weight
 
 def custom_collate_fn(batch):
     """Собирает список образцов в единый батч, отбрасывая None (невалидные)."""
@@ -37,38 +38,94 @@ def custom_collate_fn(batch):
         "text": texts
     }
 
-def make_dataset_and_loader(config, split: str):
+def get_class_weights_from_loader(train_loader, num_classes):
     """
-    Создаёт (dataset, dataloader) для указанного сплита: train/dev/test.
-    """
-    csv_path = config.csv_path.format(base_dir=config.base_dir, split=split)
-    wav_dir  = config.wav_dir.format(base_dir=config.base_dir, split=split)
-    print(f"{csv_path} {wav_dir} {split}")
+    Вычисляет веса классов из train_loader, устойчиво к отсутствующим классам.
+    Если какой-либо класс отсутствует в выборке, ему будет присвоен вес 0.0.
 
-    dataset = DatasetMultiModal(
-        csv_path = csv_path,
-        wav_dir  = wav_dir,
-        emotion_columns = config.emotion_columns,
-        split          = split,
-        sample_rate    = config.sample_rate,
-        wav_length     = config.wav_length,
-        whisper_model  = config.whisper_model,
-        text_column    = config.text_column,
-        use_whisper_for_nontrain_if_no_text = config.use_whisper_for_nontrain_if_no_text,
-        whisper_device = config.whisper_device,
-        subset_size    = config.subset_size,
-        merge_probability = config.merge_probability
+    :param train_loader: DataLoader с one-hot метками
+    :param num_classes: Общее количество классов
+    :return: np.ndarray весов длины num_classes
+    """
+    all_labels = []
+    for batch in train_loader:
+        if batch is None:
+            continue
+        all_labels.extend(batch["label"].argmax(dim=1).tolist())
+
+    if not all_labels:
+        raise ValueError("Нет ни одной метки в train_loader для вычисления весов классов.")
+
+    present_classes = np.unique(all_labels)
+
+    if len(present_classes) < num_classes:
+        missing = set(range(num_classes)) - set(present_classes)
+        logging.info(f"[!] Отсутствуют метки для классов: {sorted(missing)}")
+
+    # Вычисляем веса только по тем классам, что есть
+    weights_partial = compute_class_weight(
+        class_weight="balanced",
+        classes=present_classes,
+        y=all_labels
     )
 
-    shuffle = (split == "train")
+    # Собираем полный вектор весов
+    full_weights = np.zeros(num_classes, dtype=np.float32)
+    for cls, w in zip(present_classes, weights_partial):
+        full_weights[cls] = w
+
+    return full_weights
+
+def make_dataset_and_loader(config, split: str, only_dataset: str = None):
+    """
+    Универсальная функция: объединяет датасеты, или возвращает один при only_dataset.
+    """
+    datasets = []
+
+    if not hasattr(config, "datasets") or not config.datasets:
+        raise ValueError("⛔ В конфиге не указана секция [datasets].")
+
+    for dataset_name, dataset_cfg in config.datasets.items():
+        if only_dataset and dataset_name != only_dataset:
+            continue
+
+        csv_path = dataset_cfg["csv_path"].format(base_dir=dataset_cfg["base_dir"], split=split)
+        wav_dir  = dataset_cfg["wav_dir"].format(base_dir=dataset_cfg["base_dir"], split=split)
+
+        logging.info(f"[{dataset_name.upper()}] Split={split}: CSV={csv_path}, WAV_DIR={wav_dir}")
+
+        dataset = DatasetMultiModal(
+            csv_path = csv_path,
+            wav_dir  = wav_dir,
+            emotion_columns = config.emotion_columns,
+            split          = split,
+            sample_rate    = config.sample_rate,
+            wav_length     = config.wav_length,
+            whisper_model  = config.whisper_model,
+            text_column    = config.text_column,
+            use_whisper_for_nontrain_if_no_text = config.use_whisper_for_nontrain_if_no_text,
+            whisper_device = config.whisper_device,
+            subset_size    = config.subset_size,
+            merge_probability = config.merge_probability
+        )
+
+        datasets.append(dataset)
+
+    if not datasets:
+        raise ValueError(f"⚠️ Для split='{split}' не найдено ни одного подходящего датасета.")
+
+    # Объединяем только если их несколько
+    full_dataset = datasets[0] if len(datasets) == 1 else ConcatDataset(datasets)
+
     loader = DataLoader(
-        dataset,
-        batch_size  = config.batch_size,
-        shuffle     = shuffle,
-        num_workers = config.num_workers,
-        collate_fn  = custom_collate_fn
+        full_dataset,
+        batch_size=config.batch_size,
+        shuffle=(split == "train"),
+        num_workers=config.num_workers,
+        collate_fn=custom_collate_fn
     )
-    return dataset, loader
+
+    return full_dataset, loader
 
 def run_eval(model, loader, audio_extractor, text_extractor, criterion, device="cuda"):
     """
@@ -113,7 +170,7 @@ def run_eval(model, loader, audio_extractor, text_extractor, criterion, device="
 
     return avg_loss, uar_m, war_m, mf1_m, wf1_m
 
-def train_once(config, train_loader, dev_loader, test_loader):
+def train_once(config, train_loader, dev_loaders, test_loaders):
     """
     Логика обучения (train/dev/test).
     Возвращает лучшую метрику на dev и словарь метрик.
@@ -183,7 +240,11 @@ def train_once(config, train_loader, dev_loader, test_loader):
 
     # Оптимизатор и лосс
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    criterion = WeightedCrossEntropyLoss()
+
+    class_weights = get_class_weights_from_loader(train_loader, num_classes)
+    criterion = WeightedCrossEntropyLoss(class_weights)
+
+    logging.info("Class weights: " + ", ".join(f"{name}={weight:.4f}" for name, weight in zip(config.emotion_columns, class_weights)))
 
     # LR Scheduler
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -249,28 +310,25 @@ def train_once(config, train_loader, dev_loader, test_loader):
         )
 
         # --- DEV ---
-        dev_loss, dev_uar, dev_war, dev_mf1, dev_wf1 = run_eval(
-            model, dev_loader, audio_extractor, text_extractor, criterion, device
-        )
-        mean_dev = np.mean([dev_uar, dev_war, dev_mf1, dev_wf1])
-        logging.info(
-            f"[DEV]  Loss={dev_loss:.4f}, UAR={dev_uar:.4f}, WAR={dev_war:.4f}, "
-            f"MF1={dev_mf1:.4f}, WF1={dev_wf1:.4f}, MEAN={mean_dev:.4f}"
-        )
+        dev_means = []
+        for name, loader in dev_loaders:
+            d_loss, d_uar, d_war, d_mf1, d_wf1 = run_eval(
+                model, loader, audio_extractor, text_extractor, criterion, device
+            )
+            d_mean = np.mean([d_uar, d_war, d_mf1, d_wf1])
+            dev_means.append(d_mean)
+            logging.info(
+                f"[DEV:{name}] Loss={d_loss:.4f}, UAR={d_uar:.4f}, WAR={d_war:.4f}, "
+                f"MF1={d_mf1:.4f}, WF1={d_wf1:.4f}, MEAN={d_mean:.4f}"
+            )
 
+        mean_dev = np.mean(dev_means)
         scheduler.step(mean_dev)
 
         if mean_dev > best_dev_mean:
             best_dev_mean = mean_dev
             patience_counter = 0
-            best_dev_metrics = {
-                "loss": dev_loss,
-                "uar":  dev_uar,
-                "war":  dev_war,
-                "mf1":  dev_mf1,
-                "wf1":  dev_wf1,
-                "mean": mean_dev
-            }
+            best_dev_metrics = {"mean": mean_dev}
         else:
             patience_counter += 1
             if patience_counter >= max_patience:
@@ -278,14 +336,15 @@ def train_once(config, train_loader, dev_loader, test_loader):
                 break
 
         # --- TEST ---
-        test_loss, test_uar, test_war, test_mf1, test_wf1 = run_eval(
-            model, test_loader, audio_extractor, text_extractor, criterion, device
-        )
-        mean_test = np.mean([test_uar, test_war, test_mf1, test_wf1])
-        logging.info(
-            f"[TEST] Loss={test_loss:.4f}, UAR={test_uar:.4f}, WAR={test_war:.4f}, "
-            f"MF1={test_mf1:.4f}, WF1={test_wf1:.4f}, MEAN={mean_test:.4f}"
-        )
+        for name, loader in test_loaders:
+            t_loss, t_uar, t_war, t_mf1, t_wf1 = run_eval(
+                model, loader, audio_extractor, text_extractor, criterion, device
+            )
+            t_mean = np.mean([t_uar, t_war, t_mf1, t_wf1])
+            logging.info(
+                f"[TEST:{name}] Loss={t_loss:.4f}, UAR={t_uar:.4f}, WAR={t_war:.4f}, "
+                f"MF1={t_mf1:.4f}, WF1={t_wf1:.4f}, MEAN={t_mean:.4f}"
+            )
 
     logging.info("Тренировка завершена. Все split'ы обработаны!")
     return best_dev_mean, best_dev_metrics

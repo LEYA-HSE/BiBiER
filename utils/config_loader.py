@@ -19,14 +19,11 @@ class ConfigLoader:
         # Общие параметры
         # ---------------------------
         self.split = self.config.get("split", "train")
-        self.base_dir = self.config.get("base_dir", "E:/MELD")
 
         # ---------------------------
-        # Пути к данным
+        # Пути к данным (многодатасетная поддержка)
         # ---------------------------
-        self.csv_path = self.config.get("csv_path", "{base_dir}/MELD.Raw/meld_{split}_labels.csv")
-        self.wav_dir = self.config.get("wav_dir", "{base_dir}/wavs/{split}")
-        # self.video_dir = self.config.get("video_dir", "{base_dir}/MELD.Raw/{split}_splits")
+        self.datasets = self.config.get("datasets", {})
 
         # ---------------------------
         # Эмоции, модальности
@@ -109,9 +106,12 @@ class ConfigLoader:
     def log_config(self):
         logging.info("=== CONFIGURATION ===")
         logging.info(f"Split: {self.split}")
-        logging.info(f"Base Dir: {self.base_dir}")
-        logging.info(f"CSV Path: {self.csv_path}")
-        logging.info(f"WAV Dir: {self.wav_dir}")
+        logging.info(f"Datasets loaded: {list(self.datasets.keys())}")
+        for name, ds in self.datasets.items():
+            logging.info(f"[Dataset: {name}]")
+            logging.info(f"  Base Dir: {ds.get('base_dir', 'N/A')}")
+            logging.info(f"  CSV Path: {ds.get('csv_path', '')}")
+            logging.info(f"  WAV Dir: {ds.get('wav_dir', '')}")
         logging.info(f"Emotion columns: {self.emotion_columns}")
 
         # Логируем обучающие параметры

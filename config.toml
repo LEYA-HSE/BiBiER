@@ -1,13 +1,17 @@
 # ---------------------------
-# Основные настройки проекта
+# Настройки корпусов данных
 # ---------------------------
-# split = "train"               # "train", "dev", "test"
-base_dir = "E:\\MELD"         # Корневая директория, где лежат данные
 
-# Пути к данным (используются в config_loader.py)
-csv_path = "{base_dir}\\meld_{split}_labels.csv"
-wav_dir = "{base_dir}\\wavs\\{split}"
-# video_dir = "{base_dir}\\video\\{split}_splits"
+[datasets.meld]
+base_dir = "E:/MELD"
+csv_path = "{base_dir}/meld_{split}_labels.csv"
+wav_dir  = "{base_dir}/wavs/{split}"
+
+[datasets.resd]
+base_dir = "E:/RESD"
+csv_path = "{base_dir}/resd_{split}_labels.csv"
+wav_dir  = "{base_dir}/wavs/{split}"
+
 
 # ---------------------------
 # Список модальностей и эмоций
@@ -19,7 +23,7 @@ emotion_columns = ["neutral", "happy", "sad", "anger", "surprise", "disgust", "f
 # DataLoader параметры
 # ---------------------------
 [dataloader]
-batch_size = 8
+batch_size = 16
 num_workers = 0
 shuffle = true
 
