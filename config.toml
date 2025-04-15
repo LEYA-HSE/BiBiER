@@ -23,7 +23,7 @@ emotion_columns = ["neutral", "happy", "sad", "anger", "surprise", "disgust", "f
 # DataLoader параметры
 # ---------------------------
 [dataloader]
-batch_size = 16
+batch_size = 8
 num_workers = 0
 shuffle = true
 

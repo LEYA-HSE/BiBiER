@@ -20,8 +20,11 @@ def main():
     results_dir = f"results_greedy_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     os.makedirs(results_dir, exist_ok=True)
 
+    epochlog_dir = os.path.join(results_dir, "metrics_by_epoch")
+    os.makedirs(epochlog_dir, exist_ok=True)
+
     # Настраиваем logging
-    log_file = os.path.join(results_dir, "greedy.log")
+    log_file = os.path.join(results_dir, "session_log.txt")
     setup_logger(logging.INFO, log_file=log_file)
 
     #  Грузим конфиг
@@ -31,6 +34,7 @@ def main():
     shutil.copy("config.toml", os.path.join(results_dir, "config_copy.toml"))
     #  Файл, куда будет писать наш жадный поиск
     overrides_file = os.path.join(results_dir, "overrides.txt")
+    csv_prefix = os.path.join(epochlog_dir, "metrics_epochlog")
 
     # Делаем датасеты/лоадеры
     # Общий train_loader
@@ -77,7 +81,8 @@ def main():
         train_fn          = train_once,
         overrides_file    = overrides_file,
         param_grid        = param_grid,
-        default_values    = default_values
+        default_values    = default_values,
+        csv_prefix        = csv_prefix
     )
 
 if __name__ == "__main__":

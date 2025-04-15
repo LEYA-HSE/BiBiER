@@ -2,6 +2,8 @@
 
 import copy
 import logging
+import numpy as np  # добавили для np.mean
+import datetime
 from typing import Any
 
 
@@ -13,9 +15,9 @@ def format_result_box(step_num, param_name, candidate, fixed_params, dev_metrics
         if k in dev_metrics:
             val = dev_metrics[k]
             if isinstance(val, float):
-                metric_lines.append(f"{k.upper():4} = {val:.4f}")
+                metric_lines.append(f"{k.upper():12} = {val:.4f}")
             else:
-                metric_lines.append(f"{k.upper():4} = {val}")
+                metric_lines.append(f"{k.upper():12} = {val}")
 
     if is_best and metric_lines and "MEAN" in metric_lines[-1].upper():
         metric_lines[-1] += " ✅"
@@ -40,7 +42,6 @@ def format_result_box(step_num, param_name, candidate, fixed_params, dev_metrics
 
     return "\n".join(box)
 
-
 def greedy_search(
     base_config,
     train_loader,
@@ -49,7 +50,8 @@ def greedy_search(
     train_fn,
     overrides_file: str,
     param_grid: dict[str, list],
-    default_values: dict[str, Any]
+    default_values: dict[str, Any],
+    csv_prefix: str = None
 ):
     current_best_params = copy.deepcopy(default_values)
     all_param_names = list(param_grid.keys())
@@ -79,11 +81,31 @@ def greedy_search(
             for k, v in current_best_params.items():
                 setattr(config_default, k, v)
             logging.info(f"[ШАГ {i+1}] {param_name} = {tried_value} (ранее проверенный)")
-            dev_mean_default, dev_metrics_default = train_fn(config_default, train_loader, dev_loader, test_loader)
+
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            if csv_prefix:
+                csv_filename = f"{csv_prefix}_{model_name}_{param_name}_{tried_value}_{timestamp}.csv"
+            else:
+                csv_filename = None
+
+            dev_mean_default, dev_metrics_default = train_fn(
+                config_default,
+                train_loader,
+                dev_loader,
+                test_loader,
+                metrics_csv_path = csv_filename
+            )
+
             all_metrics[tried_value] = (dev_mean_default, dev_metrics_default)
-            box_text = format_result_box(i+1, param_name, tried_value, {k: v for k, v in current_best_params.items() if k != param_name}, dev_metrics_default, is_best=True)
+            box_text = format_result_box(i+1, param_name, tried_value,
+                                         {k: v for k, v in current_best_params.items() if k != param_name},
+                                         dev_metrics_default, is_best=True)
+
             with open(overrides_file, "a", encoding="utf-8") as f:
                 f.write("\n" + box_text + "\n")
+
+            _log_dataset_metrics(dev_metrics_default, overrides_file)
+
             best_metric_for_param = dev_mean_default
 
         for candidate in candidates_to_try:
@@ -91,9 +113,21 @@ def greedy_search(
             for k, v in current_best_params.items():
                 setattr(config, k, v)
             setattr(config, param_name, candidate)
-
             logging.info(f"[ШАГ {i+1}] {param_name} = {candidate}, (остальные {current_best_params})")
-            dev_mean, dev_metrics = train_fn(config, train_loader, dev_loader, test_loader)
+
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            if csv_prefix:
+                csv_filename = f"{csv_prefix}_{model_name}_{param_name}_{candidate}_{timestamp}.csv"
+            else:
+                csv_filename = None
+
+            dev_mean, dev_metrics = train_fn(
+                config,
+                train_loader,
+                dev_loader,
+                test_loader,
+                metrics_csv_path = csv_filename
+                )
 
             all_metrics[candidate] = (dev_mean, dev_metrics)
 
@@ -106,8 +140,11 @@ def greedy_search(
                 dev_metrics=dev_metrics,
                 is_best=is_better
             )
+
             with open(overrides_file, "a", encoding="utf-8") as f:
                 f.write("\n" + box_text + "\n")
+
+            _log_dataset_metrics(dev_metrics, overrides_file)
 
             if is_better:
                 best_val_for_param = candidate
@@ -117,10 +154,36 @@ def greedy_search(
         with open(overrides_file, "a", encoding="utf-8") as f:
             f.write(f"\n>> [Итог Шаг{i+1}]: Лучший {param_name}={best_val_for_param}, dev_mean={best_metric_for_param:.4f}\n")
 
-    # Итоговая комбинация
     with open(overrides_file, "a", encoding="utf-8") as f:
         f.write("\n=== Итоговая комбинация (Dev-based) ===\n")
         for k, v in current_best_params.items():
             f.write(f"{k} = {v}\n")
 
     logging.info("Готово! Лучшие параметры подобраны.")
+
+
+def _compute_combined_avg(dev_metrics):
+    if "by_dataset" not in dev_metrics:
+        return None
+
+    values = []
+    for entry in dev_metrics["by_dataset"]:
+        for key in ["uar", "war", "mf1", "wf1"]:
+            if key in entry:
+                values.append(entry[key])
+
+    return float(np.mean(values)) if values else None
+
+def _log_dataset_metrics(dev_metrics, file_path):
+    if "by_dataset" not in dev_metrics:
+        return
+
+    with open(file_path, "a", encoding="utf-8") as f:
+        f.write("\n>>> Подробные метрики по каждому датасету:\n")
+        for ds in dev_metrics["by_dataset"]:
+            name = ds.get("name", "unknown")
+            f.write(f"  - {name}:\n")
+            for k in ["loss", "uar", "war", "mf1", "wf1", "mean"]:
+                if k in ds:
+                    f.write(f"      {k.upper():4} = {ds[k]:.4f}\n")
+        f.write("<<< Конец подробных метрик\n")

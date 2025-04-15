@@ -8,11 +8,11 @@ import random
 import datetime
 import numpy as np
 from tqdm import tqdm
+import csv
 
 from torch.utils.data import DataLoader, ConcatDataset
 from utils.losses import WeightedCrossEntropyLoss
 from utils.measures import uar, war, mf1, wf1
-from utils.logger_setup import setup_logger
 from models.models import BiFormer, BiGraphFormer, BiGatedGraphFormer
 from data_loading.dataset_multimodal import DatasetMultiModal
 from data_loading.feature_extractor import AudioEmbeddingExtractor, TextEmbeddingExtractor
@@ -170,18 +170,22 @@ def run_eval(model, loader, audio_extractor, text_extractor, criterion, device="
 
     return avg_loss, uar_m, war_m, mf1_m, wf1_m
 
-def train_once(config, train_loader, dev_loaders, test_loaders):
+def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path=None):
     """
     Логика обучения (train/dev/test).
     Возвращает лучшую метрику на dev и словарь метрик.
     """
-    # Лог-файл
-    os.makedirs("logs", exist_ok=True)
-    datestr = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    log_file = os.path.join("logs", f"train_log_{datestr}.txt")
 
-    setup_logger(logging.INFO, log_file=log_file)
     logging.info("== Запуск тренировки (train/dev/test) ==")
+
+    csv_writer = None
+    csv_file = None
+
+    if metrics_csv_path:
+        csv_file = open(metrics_csv_path, mode="w", newline="", encoding="utf-8")
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(["split", "epoch", "dataset", "loss", "uar", "war", "mf1", "wf1", "mean"])
+
 
     # Seed
     if config.random_seed > 0:
@@ -210,6 +214,7 @@ def train_once(config, train_loader, dev_loaders, test_loaders):
     lr                    = config.lr
     num_epochs            = config.num_epochs
     tr_layer_number       = config.tr_layer_number
+    max_patience          = config.max_patience
 
     dict_models = {
         'BiFormer': BiFormer,
@@ -222,20 +227,20 @@ def train_once(config, train_loader, dev_loaders, test_loaders):
 
     model_cls = dict_models[config.model_name]
     model = model_cls(
-        audio_dim=config.audio_embedding_dim,
-        text_dim=config.text_embedding_dim,
-        hidden_dim=hidden_dim,
-        hidden_dim_gated=hidden_dim_gated,
-        num_transformer_heads=num_transformer_heads,
-        num_graph_heads=num_graph_heads,
-        seg_len=config.max_tokens,
-        mode=mode,
-        dropout=dropout,
-        positional_encoding=positional_encoding,
-        out_features=out_features,
-        tr_layer_number=tr_layer_number,
-        device=device,
-        num_classes=num_classes
+        audio_dim             = config.audio_embedding_dim,
+        text_dim              = config.text_embedding_dim,
+        hidden_dim            = hidden_dim,
+        hidden_dim_gated      = hidden_dim_gated,
+        num_transformer_heads = num_transformer_heads,
+        num_graph_heads       = num_graph_heads,
+        seg_len               = config.max_tokens,
+        mode                  = mode,
+        dropout               = dropout,
+        positional_encoding   = positional_encoding,
+        out_features          = out_features,
+        tr_layer_number       = tr_layer_number,
+        device                = device,
+        num_classes           = num_classes
     ).to(device)
 
     # Оптимизатор и лосс
@@ -258,7 +263,6 @@ def train_once(config, train_loader, dev_loaders, test_loaders):
     # Early stopping по dev
     best_dev_mean = float("-inf")
     best_dev_metrics = {}
-    max_patience = 10
     patience_counter = 0
 
     for epoch in range(num_epochs):
@@ -311,16 +315,32 @@ def train_once(config, train_loader, dev_loaders, test_loaders):
 
         # --- DEV ---
         dev_means = []
+        dev_metrics_by_dataset = []
+
         for name, loader in dev_loaders:
             d_loss, d_uar, d_war, d_mf1, d_wf1 = run_eval(
                 model, loader, audio_extractor, text_extractor, criterion, device
             )
             d_mean = np.mean([d_uar, d_war, d_mf1, d_wf1])
             dev_means.append(d_mean)
+
+            if csv_writer:
+                csv_writer.writerow(["dev", epoch, name, d_loss, d_uar, d_war, d_mf1, d_wf1, d_mean])
+
             logging.info(
                 f"[DEV:{name}] Loss={d_loss:.4f}, UAR={d_uar:.4f}, WAR={d_war:.4f}, "
                 f"MF1={d_mf1:.4f}, WF1={d_wf1:.4f}, MEAN={d_mean:.4f}"
             )
+
+            dev_metrics_by_dataset.append({
+                "name": name,
+                "loss": d_loss,
+                "uar": d_uar,
+                "war": d_war,
+                "mf1": d_mf1,
+                "wf1": d_wf1,
+                "mean": d_mean,
+            })
 
         mean_dev = np.mean(dev_means)
         scheduler.step(mean_dev)
@@ -328,7 +348,10 @@ def train_once(config, train_loader, dev_loaders, test_loaders):
         if mean_dev > best_dev_mean:
             best_dev_mean = mean_dev
             patience_counter = 0
-            best_dev_metrics = {"mean": mean_dev}
+            best_dev_metrics = {
+                "mean": mean_dev
+            }
+            best_dev_metrics["by_dataset"] = dev_metrics_by_dataset
         else:
             patience_counter += 1
             if patience_counter >= max_patience:
@@ -345,6 +368,12 @@ def train_once(config, train_loader, dev_loaders, test_loaders):
                 f"[TEST:{name}] Loss={t_loss:.4f}, UAR={t_uar:.4f}, WAR={t_war:.4f}, "
                 f"MF1={t_mf1:.4f}, WF1={t_wf1:.4f}, MEAN={t_mean:.4f}"
             )
+
+            if csv_writer:
+                csv_writer.writerow(["test", epoch, name, t_loss, t_uar, t_war, t_mf1, t_wf1, t_mean])
+
+    if csv_file:
+        csv_file.close()
 
     logging.info("Тренировка завершена. Все split'ы обработаны!")
     return best_dev_mean, best_dev_metrics
