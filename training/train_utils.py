@@ -1,21 +1,21 @@
 # coding: utf-8
 # train_utils.py
 
-import os
 import torch
 import logging
 import random
-import datetime
 import numpy as np
-from tqdm import tqdm
 import csv
+from tqdm import tqdm
+from typing import Type
 
 from torch.utils.data import DataLoader, ConcatDataset
+from torch.nn.utils.rnn import pad_sequence
+
 from utils.losses import WeightedCrossEntropyLoss
 from utils.measures import uar, war, mf1, wf1
 from models.models import BiFormer, BiGraphFormer, BiGatedGraphFormer
-from data_loading.dataset_multimodal import DatasetMultiModal
-from data_loading.feature_extractor import AudioEmbeddingExtractor, TextEmbeddingExtractor
+from data_loading.dataset_multimodal import DatasetMultiModal,DatasetMultiModalWithPretrainedExtractors
 from sklearn.utils.class_weight import compute_class_weight
 
 def custom_collate_fn(batch):
@@ -25,17 +25,19 @@ def custom_collate_fn(batch):
         return None
 
     audios = [b["audio"] for b in batch]
-    audio_tensor = torch.stack(audios)
+    # audio_tensor = torch.stack(audios)
+    audio_tensor = pad_sequence(audios, batch_first=True)
 
     labels = [b["label"] for b in batch]
     label_tensor = torch.stack(labels)
 
     texts = [b["text"] for b in batch]
+    text_tensor = torch.stack(texts)
 
     return {
         "audio": audio_tensor,
         "label": label_tensor,
-        "text": texts
+        "text": text_tensor
     }
 
 def get_class_weights_from_loader(train_loader, num_classes):
@@ -76,7 +78,7 @@ def get_class_weights_from_loader(train_loader, num_classes):
 
     return full_weights
 
-def make_dataset_and_loader(config, split: str, only_dataset: str = None):
+def make_dataset_and_loader(config, split: str, audio_feature_extractor: Type = None, text_feature_extractor: Type = None, whisper_model: Type = None, only_dataset: str = None):
     """
     Универсальная функция: объединяет датасеты, или возвращает один при only_dataset.
     """
@@ -94,19 +96,16 @@ def make_dataset_and_loader(config, split: str, only_dataset: str = None):
 
         logging.info(f"[{dataset_name.upper()}] Split={split}: CSV={csv_path}, WAV_DIR={wav_dir}")
 
-        dataset = DatasetMultiModal(
+        dataset = DatasetMultiModalWithPretrainedExtractors(
             csv_path = csv_path,
             wav_dir  = wav_dir,
             emotion_columns = config.emotion_columns,
             split          = split,
-            sample_rate    = config.sample_rate,
-            wav_length     = config.wav_length,
-            whisper_model  = config.whisper_model,
-            text_column    = config.text_column,
-            use_whisper_for_nontrain_if_no_text = config.use_whisper_for_nontrain_if_no_text,
-            whisper_device = config.whisper_device,
-            subset_size    = config.subset_size,
-            merge_probability = config.merge_probability
+            config    = config,
+            audio_feature_extractor = audio_feature_extractor,
+            text_feature_extractor = text_feature_extractor,
+            whisper_model = whisper_model,
+            dataset_name = dataset_name
         )
 
         datasets.append(dataset)
@@ -127,7 +126,7 @@ def make_dataset_and_loader(config, split: str, only_dataset: str = None):
 
     return full_dataset, loader
 
-def run_eval(model, loader, audio_extractor, text_extractor, criterion, device="cuda"):
+def run_eval(model, loader, criterion, device="cuda"):
     """
     Оценка модели на loader'е. Возвращает (loss, uar, war, mf1, wf1).
     """
@@ -146,10 +145,11 @@ def run_eval(model, loader, audio_extractor, text_extractor, criterion, device="
             labels = batch["label"].to(device)
             texts  = batch["text"]
 
-            audio_emb = audio_extractor.extract(audio)
-            text_emb  = text_extractor.extract(texts)
+            # audio_emb = audio_extractor.extract(audio)
+            # text_emb  = text_extractor.extract(texts)
 
-            logits = model(audio_emb, text_emb)
+            # logits = model(audio_emb, text_emb)
+            logits = model(audio, texts)
             target = labels.argmax(dim=1)
 
             loss = criterion(logits, target)
@@ -198,8 +198,8 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Экстракторы
-    audio_extractor = AudioEmbeddingExtractor(config)
-    text_extractor  = TextEmbeddingExtractor(config)
+    # audio_extractor = AudioEmbeddingExtractor(config)
+    # text_extractor  = TextEmbeddingExtractor(config)
 
     # Параметры
     hidden_dim            = config.hidden_dim
@@ -282,10 +282,7 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
             labels = batch["label"].to(device)
             texts  = batch["text"]
 
-            audio_emb = audio_extractor.extract(audio)
-            text_emb  = text_extractor.extract(texts)
-
-            logits = model(audio_emb, text_emb)
+            logits = model(audio, texts)
             target = labels.argmax(dim=1)
             loss   = criterion(logits, target)
 
@@ -319,7 +316,7 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
 
         for name, loader in dev_loaders:
             d_loss, d_uar, d_war, d_mf1, d_wf1 = run_eval(
-                model, loader, audio_extractor, text_extractor, criterion, device
+                model, loader, criterion, device
             )
             d_mean = np.mean([d_uar, d_war, d_mf1, d_wf1])
             dev_means.append(d_mean)
@@ -361,7 +358,7 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
         # --- TEST ---
         for name, loader in test_loaders:
             t_loss, t_uar, t_war, t_mf1, t_wf1 = run_eval(
-                model, loader, audio_extractor, text_extractor, criterion, device
+                model, loader, criterion, device
             )
             t_mean = np.mean([t_uar, t_war, t_mf1, t_wf1])
             logging.info(

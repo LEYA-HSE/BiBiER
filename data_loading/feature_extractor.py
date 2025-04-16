@@ -2,13 +2,111 @@
 
 import torch
 import logging
+import numpy as np
 import torch.nn.functional as F
 from transformers import (
     AutoFeatureExtractor,
     AutoModel,
     AutoTokenizer,
-    AutoModelForAudioClassification
+    AutoModelForAudioClassification,
+    Wav2Vec2Processor
 )
+from data_loading.pretrained_extractors import EmotionModel, get_model_mamba, Mamba
+
+
+class PretrainedAudioEmbeddingExtractor:
+    """
+    Извлекает эмбеддинги из аудио, используя модель (например 'amiriparian/ExHuBERT'),
+    с учётом pooling, нормализации и т.д.
+    """
+
+    def __init__(self, config):
+        """
+        Ожидается, что в config есть поля:
+         - audio_model_name (str)         : название модели (ExHuBERT и т.п.)
+         - emb_device (str)              : "cpu" или "cuda"
+         - audio_pooling (str | None)    : "mean", "cls", "max", "min", "last" или None (пропустить пуллинг)
+         - emb_normalize (bool)          : делать ли L2-нормализацию выхода
+         - max_audio_frames (int)        : ограничение длины по временной оси (если 0 - не ограничивать)
+        """
+        self.config = config
+        self.device = config.emb_device
+        self.model_name = config.audio_model_name
+        self.pooling = config.audio_pooling       # может быть None
+        self.normalize_output = config.emb_normalize
+        self.max_audio_frames = getattr(config, "max_audio_frames", 0)
+        self.audio_classifier_checkpoint = config.audio_classifier_checkpoint
+
+        # Инициализируем processor и audio_embedder
+        self.processor = Wav2Vec2Processor.from_pretrained(self.model_name)
+        self.audio_embedder = EmotionModel.from_pretrained(self.model_name).to(self.device)
+
+        # Загружаем модель
+        self.classifier_model = self.load_classifier_model_from_checkpoint(self.audio_classifier_checkpoint)
+
+
+    def extract(self, waveform: torch.Tensor, sample_rate=16000):
+        """
+        Извлекает эмбеддинги из аудиоданных.
+
+        :param waveform: Тензор формы (T).
+        :param sample_rate: Частота дискретизации (int).
+        :return: Тензоры:
+            вернётся (B, classes), (B, sequence_length, hidden_dim).
+        """
+
+        embeddings = self.process_audio(waveform, sample_rate)
+        tensor_emb = torch.tensor(embeddings, dtype=torch.float32).to(self.device)
+        lengths = [tensor_emb.shape[1]]
+
+        with torch.no_grad():
+            logits, hidden = self.classifier_model(tensor_emb, lengths, with_features=True)
+
+            # Если pooling=None => вернём (B, seq_len, hidden_dim)
+            if hidden.dim() == 3:
+                if self.pooling is None:
+                    emb = hidden
+                else:
+                    if self.pooling == "mean":
+                        emb = hidden.mean(dim=1)
+                    elif self.pooling == "cls":
+                        emb = hidden[:, 0, :]
+                    elif self.pooling == "max":
+                        emb, _ = hidden.max(dim=1)
+                    elif self.pooling == "min":
+                        emb, _ = hidden.min(dim=1)
+                    elif self.pooling == "last":
+                        emb = hidden[:, -1, :]
+                    elif self.pooling == "sum":
+                        emb = hidden.sum(dim=1)
+                    else:
+                        emb = hidden.mean(dim=1)
+            else:
+                # На всякий случай, если получилось (B, hidden_dim)
+                emb = hidden
+
+        if self.normalize_output and emb.dim() == 2:
+            emb = F.normalize(emb, p=2, dim=1)
+
+        return logits, emb
+
+    def process_audio(self, signal: np.ndarray, sampling_rate: int) -> np.ndarray:
+        inputs = self.processor(signal, sampling_rate=sampling_rate, return_tensors="pt", padding=True)
+        input_values = inputs["input_values"].to(self.device)
+
+        with torch.no_grad():
+            outputs = self.audio_embedder(input_values)
+            embeddings = outputs
+
+        return embeddings.detach().cpu().numpy()
+
+    def load_classifier_model_from_checkpoint(self, checkpoint_path):
+        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        exp_params = checkpoint['exp_params']
+        classifier_model = get_model_mamba(exp_params).to(self.device)
+        classifier_model.load_state_dict(checkpoint['model_state_dict'])
+        classifier_model.eval()
+        return classifier_model
 
 class AudioEmbeddingExtractor:
     """
@@ -227,3 +325,70 @@ class TextEmbeddingExtractor:
             emb = F.normalize(emb, p=2, dim=1)
 
         return emb
+
+class PretrainedTextEmbeddingExtractor:
+    """
+    Извлекает эмбеддинги из текста (например 'jinaai/jina-embeddings-v3'),
+    с учётом pooling (None, mean, cls, и т.д.), нормализации и усечения.
+    """
+
+    def __init__(self, config):
+        """
+        Параметры в config:
+         - text_model_name (str)
+         - emb_device (str)
+         - text_pooling (str | None)
+         - emb_normalize (bool)
+         - max_tokens (int)
+        """
+        self.config = config
+        self.device = config.emb_device
+        self.model_name = config.text_model_name
+        self.pooling = config.text_pooling        # может быть None
+        self.normalize_output = config.emb_normalize
+        self.max_tokens = config.max_tokens
+        self.text_classifier_checkpoint = config.text_classifier_checkpoint
+
+        self.model = Mamba(num_layers = 2, d_input = 1024, d_model = 512, num_classes=7, model_name=self.model_name, max_tokens=self.max_tokens, pooling=None).to(self.device)
+        checkpoint = torch.load(self.text_classifier_checkpoint)
+        self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.model.eval()
+
+    def extract(self, text_list):
+        """
+        :param text_list: список строк (или одна строка)
+        :return: тензор (B, hidden_dim) или (B, seq_len, hidden_dim), если pooling=None
+        """
+
+        if isinstance(text_list, str):
+            text_list = [text_list]
+
+        with torch.no_grad():
+            logits, hidden = self.model(text_list, with_features=True)
+
+            if hidden.dim() == 3:
+                if self.pooling is None:
+                    emb = hidden
+                else:
+                    if self.pooling == "mean":
+                        emb = hidden.mean(dim=1)
+                    elif self.pooling == "cls":
+                        emb = hidden[:, 0, :]
+                    elif self.pooling == "max":
+                        emb, _ = hidden.max(dim=1)
+                    elif self.pooling == "min":
+                        emb, _ = hidden.min(dim=1)
+                    elif self.pooling == "last":
+                        emb = hidden[:, -1, :]
+                    elif self.pooling == "sum":
+                        emb = hidden.sum(dim=1)
+                    else:
+                        emb = hidden.mean(dim=1)
+            else:
+                # На всякий случай, если получилось (B, hidden_dim)
+                emb = hidden
+
+        if self.normalize_output and emb.dim() == 2:
+            emb = F.normalize(emb, p=2, dim=1)
+
+        return logits, emb

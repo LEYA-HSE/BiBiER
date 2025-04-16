@@ -30,7 +30,7 @@ class ConfigLoader:
         # ---------------------------
         self.modalities = self.config.get("modalities", ["audio"])
         self.emotion_columns = self.config.get("emotion_columns",
-                                               ["neutral","happy","sad","anger","surprise","disgust","fear"])
+                                            ["anger", "disgust", "fear", "happy", "neutral", "sad", "surprise"])
 
         # ---------------------------
         # DataLoader
@@ -78,8 +78,8 @@ class ConfigLoader:
         self.model_name=train_cfg.get("model_name", "BiFormer")
         self.tr_layer_number=train_cfg.get("tr_layer_number", 1)
         self.max_patience=train_cfg.get("max_patience", 10)
-
-
+        self.save_prepared_data=train_cfg.get("save_prepared_data", True)
+        self.save_feature_path=train_cfg.get("save_feature_path", 'features')
 
         # ---------------------------
         # Embeddings
@@ -87,6 +87,9 @@ class ConfigLoader:
         emb_cfg = self.config.get("embeddings", {})
         self.audio_model_name = emb_cfg.get("audio_model", "amiriparian/ExHuBERT")
         self.text_model_name  = emb_cfg.get("text_model",  "jinaai/jina-embeddings-v3")
+        self.audio_classifier_checkpoint = emb_cfg.get("audio_classifier_checkpoint", "best_audio_model.pt")
+        self.text_classifier_checkpoint = emb_cfg.get("text_classifier_checkpoint", "best_text_model.pth")
+
 
         self.audio_embedding_dim = emb_cfg.get("audio_embedding_dim", 1024)
         self.text_embedding_dim  = emb_cfg.get("text_embedding_dim",  1024)
@@ -135,6 +138,8 @@ class ConfigLoader:
         logging.info(f"Num Epochs: {self.num_epochs}")
         logging.info(f"Merge Probability={self.merge_probability}")
         logging.info(f"Max Patience={self.max_patience}")
+        logging.info(f"Save Prepared Data={self.save_prepared_data}")
+        logging.info(f"Path to Save Features={self.save_feature_path}")
 
         # Логируем embeddings
         logging.info("--- Embeddings Config ---")

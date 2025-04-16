@@ -75,18 +75,23 @@ lr = 1e-4 # скорость обучения
 num_epochs = 2 # число эпох обучения
 model_name = "BiFormer" # имя класса модели BiGraphFormer BiFormer BiGatedGraphFormer
 max_patience = 10 # Параметр ранней остановки обучения
+save_prepared_data = true # Сохранить эмбеддинги
+save_feature_path = './features/' # Путь для сохранения эмбеддингов
 
 [embeddings]
-audio_model = "amiriparian/ExHuBERT"  # Hugging Face имя модели для аудио
+# audio_model = "amiriparian/ExHuBERT"  # Hugging Face имя модели для аудио
+audio_model = "audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim"  # Hugging Face имя модели для аудио
+audio_classifier_checkpoint = "best_audio_model.pt"
+text_classifier_checkpoint = "best_text_model.pth"
 text_model = "jinaai/jina-embeddings-v3"  # Hugging Face имя модели для текста
-
-audio_embedding_dim = 1024  # размерность аудио-эмбеддинга
+# вынести в конфиг
+audio_embedding_dim = 256  # размерность аудио-эмбеддинга
 text_embedding_dim = 1024   # размерность текст-эмбеддинга
 
 # audio_pooling = "mean"        # "mean", "cls", "max", "min", "last", "attention"
 # text_pooling = "cls"          # "mean", "cls", "max", "min", "last", "sum", "attention"
 
-max_tokens = 44         # ограничение на длину текста (токенов) при токенизации
+max_tokens = 95         # ограничение на длину текста (токенов) при токенизации
 max_audio_frames = 64000 # ограничение на длину аудио (семплов) до усечения
 
 device = "cuda"          # "cuda" или "cpu", куда грузить модель

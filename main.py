@@ -4,6 +4,7 @@ import logging
 import os
 import shutil
 import datetime
+import whisper
 # os.environ["HF_HOME"] = "models"
 
 from utils.config_loader import ConfigLoader
@@ -13,6 +14,7 @@ from training.train_utils import (
     make_dataset_and_loader,
     train_once
 )
+from data_loading.feature_extractor import PretrainedAudioEmbeddingExtractor, PretrainedTextEmbeddingExtractor
 
 def main():
 
@@ -36,17 +38,24 @@ def main():
     overrides_file = os.path.join(results_dir, "overrides.txt")
     csv_prefix = os.path.join(epochlog_dir, "metrics_epochlog")
 
+    audio_feature_extractor= PretrainedAudioEmbeddingExtractor(base_config)
+    text_feature_extractor = PretrainedTextEmbeddingExtractor(base_config)
+
+    # Инициализируем Whisper-модель один раз
+    logging.info(f"Инициализация Whisper: модель={base_config.whisper_model}, устройство={base_config.whisper_device}")
+    whisper_model = whisper.load_model(base_config.whisper_model, device=base_config.whisper_device)
+
     # Делаем датасеты/лоадеры
     # Общий train_loader
-    _, train_loader = make_dataset_and_loader(base_config, "train")
+    _, train_loader = make_dataset_and_loader(base_config, "train", audio_feature_extractor, text_feature_extractor, whisper_model)
 
     # Раздельные dev/test
     dev_loaders = []
     test_loaders = []
 
     for dataset_name in base_config.datasets:
-        _, dev_loader = make_dataset_and_loader(base_config, "dev", only_dataset=dataset_name)
-        _, test_loader = make_dataset_and_loader(base_config, "test", only_dataset=dataset_name)
+        _, dev_loader = make_dataset_and_loader(base_config, "dev",  audio_feature_extractor, text_feature_extractor, whisper_model, only_dataset=dataset_name)
+        _, test_loader = make_dataset_and_loader(base_config, "test",  audio_feature_extractor, text_feature_extractor, whisper_model, only_dataset=dataset_name)
 
         dev_loaders.append((dataset_name, dev_loader))
         test_loaders.append((dataset_name, test_loader))
@@ -57,7 +66,7 @@ def main():
     # Или же запустить жадный перебор гиперпараметров:
     param_grid = {
         "hidden_dim":             [128, 256, 512],
-        "hidden_dim_gated":       [128, 256, 512],
+        # "hidden_dim_gated":       [128, 256, 512],
         "num_transformer_heads":  [2, 4, 8],
         "tr_layer_number":        [1, 2, 3],
         # "out_features":           [128, 256, 512],
@@ -65,7 +74,7 @@ def main():
     }
     default_values = {
         "hidden_dim":             128,
-        "hidden_dim_gated":       128,
+        # "hidden_dim_gated":       128,
         "num_transformer_heads":  2,
         "tr_layer_number":        1,
         # "out_features":           128,
