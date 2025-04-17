@@ -5,6 +5,7 @@ import os
 import shutil
 import datetime
 import whisper
+import toml
 # os.environ["HF_HOME"] = "models"
 
 from utils.config_loader import ConfigLoader
@@ -60,24 +61,9 @@ def main():
         dev_loaders.append((dataset_name, dev_loader))
         test_loaders.append((dataset_name, test_loader))
 
-
-    # Или же запустить жадный перебор гиперпараметров:
-    param_grid = {
-        "hidden_dim":             [128, 256, 512],
-        # "hidden_dim_gated":       [128, 256, 512],
-        "num_transformer_heads":  [2, 4, 8],
-        "tr_layer_number":        [1, 2, 3],
-        # "out_features":           [128, 256, 512],
-        # "num_graph_heads":        [2, 4, 8]
-    }
-    default_values = {
-        "hidden_dim":             128,
-        # "hidden_dim_gated":       128,
-        "num_transformer_heads":  2,
-        "tr_layer_number":        1,
-        # "out_features":           128,
-        # "num_graph_heads":        2
-    }
+    search_config = toml.load("search_params.toml")
+    param_grid = dict(search_config["grid"])
+    default_values = dict(search_config["defaults"])
 
     if base_config.search_type == "greedy":
         greedy_search(
