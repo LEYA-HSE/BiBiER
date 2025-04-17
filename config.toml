@@ -78,7 +78,7 @@ model_name = "BiFormer" # имя класса модели BiGraphFormer BiForme
 max_patience = 10 # Параметр ранней остановки обучения
 save_prepared_data = true # Сохранить эмбеддинги
 save_feature_path = './features/' # Путь для сохранения эмбеддингов
-search_type = "none"  # greedy или "exhaustive", или "none"
+search_type = "exhaustive"  # greedy или "exhaustive", или "none"
 
 [embeddings]
 # audio_model = "amiriparian/ExHuBERT"  # Hugging Face имя модели для аудио
