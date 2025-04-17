@@ -4,8 +4,8 @@ import copy
 import logging
 import numpy as np  # добавили для np.mean
 import datetime
+from itertools import product
 from typing import Any
-
 
 def format_result_box(step_num, param_name, candidate, fixed_params, dev_metrics, is_best=False):
     title = f"Шаг {step_num}: {param_name} = {candidate}"
@@ -160,6 +160,81 @@ def greedy_search(
             f.write(f"{k} = {v}\n")
 
     logging.info("Готово! Лучшие параметры подобраны.")
+
+def exhaustive_search(
+    base_config,
+    train_loader,
+    dev_loader,
+    test_loader,
+    train_fn,
+    overrides_file: str,
+    param_grid: dict[str, list],
+    csv_prefix: str = None
+):
+
+    all_param_names = list(param_grid.keys())
+    model_name = getattr(base_config, "model_name", "UNKNOWN_MODEL")
+
+    with open(overrides_file, "a", encoding="utf-8") as f:
+        f.write("=== Полный перебор гиперпараметров (Dev-based) ===\n")
+        f.write(f"Модель: {model_name}\n")
+
+    best_config = None
+    best_metric = float("-inf")
+    best_metrics = {}
+    combo_id = 0
+
+    for combo in product(*(param_grid[param] for param in all_param_names)):
+        combo_id += 1
+        param_combo = dict(zip(all_param_names, combo))
+
+        config = copy.deepcopy(base_config)
+        for k, v in param_combo.items():
+            setattr(config, k, v)
+
+        logging.info(f"\n[Комбинация #{combo_id}] {param_combo}")
+
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        if csv_prefix:
+            csv_filename = f"{csv_prefix}_{model_name}_combo{combo_id}_{timestamp}.csv"
+        else:
+            csv_filename = None
+
+        dev_mean, dev_metrics = train_fn(
+            config,
+            train_loader,
+            dev_loader,
+            test_loader,
+            metrics_csv_path=csv_filename
+        )
+
+        is_better = dev_mean > best_metric
+        box_text = format_result_box(
+            step_num=combo_id,
+            param_name=" + ".join(all_param_names),
+            candidate=str(combo),
+            fixed_params={},
+            dev_metrics=dev_metrics,
+            is_best=is_better
+        )
+
+        with open(overrides_file, "a", encoding="utf-8") as f:
+            f.write("\n" + box_text + "\n")
+
+        _log_dataset_metrics(dev_metrics, overrides_file)
+
+        if is_better:
+            best_metric = dev_mean
+            best_config = param_combo
+            best_metrics = dev_metrics
+
+    with open(overrides_file, "a", encoding="utf-8") as f:
+        f.write("\n=== Лучшая комбинация (Dev-based) ===\n")
+        for k, v in best_config.items():
+            f.write(f"{k} = {v}\n")
+
+    logging.info("Полный перебор завершён! Лучшие параметры выбраны.")
+    return best_metric, best_config, best_metrics
 
 
 def _compute_combined_avg(dev_metrics):

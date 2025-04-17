@@ -9,7 +9,7 @@ import whisper
 
 from utils.config_loader import ConfigLoader
 from utils.logger_setup import setup_logger
-from utils.greedy_search import greedy_search
+from utils.search_utils import greedy_search, exhaustive_search
 from training.train_utils import (
     make_dataset_and_loader,
     train_once
@@ -19,7 +19,7 @@ from data_loading.feature_extractor import PretrainedAudioEmbeddingExtractor, Pr
 def main():
 
     #  Создаём директорию для результатов, копируем config
-    results_dir = f"results_greedy_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+    results_dir = f"results_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     os.makedirs(results_dir, exist_ok=True)
 
     epochlog_dir = os.path.join(results_dir, "metrics_by_epoch")
@@ -60,8 +60,6 @@ def main():
         dev_loaders.append((dataset_name, dev_loader))
         test_loaders.append((dataset_name, test_loader))
 
-    #    Если хотим просто один раз обучить (без перебора),
-    #    Можно вызвать train_once(base_config, train_loader, dev_loader, test_loader) напрямую.
 
     # Или же запустить жадный перебор гиперпараметров:
     param_grid = {
@@ -81,18 +79,48 @@ def main():
         # "num_graph_heads":        2
     }
 
-    # Вызываем сам перебор
-    greedy_search(
-        base_config       = base_config,
-        train_loader      = train_loader,
-        dev_loader        = dev_loaders,
-        test_loader       = test_loaders,
-        train_fn          = train_once,
-        overrides_file    = overrides_file,
-        param_grid        = param_grid,
-        default_values    = default_values,
-        csv_prefix        = csv_prefix
-    )
+    if base_config.search_type == "greedy":
+        greedy_search(
+            base_config       = base_config,
+            train_loader      = train_loader,
+            dev_loader        = dev_loaders,
+            test_loader       = test_loaders,
+            train_fn          = train_once,
+            overrides_file    = overrides_file,
+            param_grid        = param_grid,
+            default_values    = default_values,
+            csv_prefix        = csv_prefix
+        )
+
+    elif base_config.search_type == "exhaustive":
+        exhaustive_search(
+            base_config       = base_config,
+            train_loader      = train_loader,
+            dev_loader        = dev_loaders,
+            test_loader       = test_loaders,
+            train_fn          = train_once,
+            overrides_file    = overrides_file,
+            param_grid        = param_grid,
+            csv_prefix        = csv_prefix
+        )
+
+    elif base_config.search_type == "none":
+        logging.info("== Режим одиночной тренировки (без поиска параметров) ==")
+
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        csv_file_path = f"{csv_prefix}_single_{timestamp}.csv"
+
+        train_once(
+            config           = base_config,
+            train_loader     = train_loader,
+            dev_loaders      = dev_loaders,
+            test_loaders     = test_loaders,
+            metrics_csv_path = csv_file_path
+        )
+
+    else:
+        raise ValueError(f"⛔️ Неверное значение search_type в конфиге: '{base_config.search_type}'. Используй 'greedy', 'exhaustive' или 'none'.")
+
 
 if __name__ == "__main__":
     main()

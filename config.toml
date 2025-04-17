@@ -17,7 +17,8 @@ wav_dir  = "{base_dir}/wavs/{split}"
 # Список модальностей и эмоций
 # ---------------------------
 modalities = ["audio"]
-emotion_columns = ["neutral", "happy", "sad", "anger", "surprise", "disgust", "fear"]
+# emotion_columns = ["neutral", "happy", "sad", "anger", "surprise", "disgust", "fear"]
+emotion_columns = ["anger", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
 
 # ---------------------------
 # DataLoader параметры
@@ -77,6 +78,7 @@ model_name = "BiFormer" # имя класса модели BiGraphFormer BiForme
 max_patience = 10 # Параметр ранней остановки обучения
 save_prepared_data = true # Сохранить эмбеддинги
 save_feature_path = './features/' # Путь для сохранения эмбеддингов
+search_type = "none"  # greedy или "exhaustive", или "none"
 
 [embeddings]
 # audio_model = "amiriparian/ExHuBERT"  # Hugging Face имя модели для аудио
@@ -87,6 +89,7 @@ text_model = "jinaai/jina-embeddings-v3"  # Hugging Face имя модели д�
 # вынести в конфиг
 audio_embedding_dim = 256  # размерность аудио-эмбеддинга
 text_embedding_dim = 1024   # размерность текст-эмбеддинга
+emb_normalize = false  # нормализовать ли вектор L2-нормой
 
 # audio_pooling = "mean"        # "mean", "cls", "max", "min", "last", "attention"
 # text_pooling = "cls"          # "mean", "cls", "max", "min", "last", "sum", "attention"
@@ -95,4 +98,3 @@ max_tokens = 95         # ограничение на длину текста (�
 max_audio_frames = 64000 # ограничение на длину аудио (семплов) до усечения
 
 device = "cuda"          # "cuda" или "cpu", куда грузить модель
-normalize_output = true  # нормализовать ли вектор L2-нормой

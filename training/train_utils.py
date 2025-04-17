@@ -9,7 +9,7 @@ import csv
 from tqdm import tqdm
 from typing import Type
 
-from torch.utils.data import DataLoader, ConcatDataset
+from torch.utils.data import DataLoader, ConcatDataset, WeightedRandomSampler
 from torch.nn.utils.rnn import pad_sequence
 
 from utils.losses import WeightedCrossEntropyLoss
@@ -80,7 +80,8 @@ def get_class_weights_from_loader(train_loader, num_classes):
 
 def make_dataset_and_loader(config, split: str, audio_feature_extractor: Type = None, text_feature_extractor: Type = None, whisper_model: Type = None, only_dataset: str = None):
     """
-    Универсальная функция: объединяет датасеты, или возвращает один при only_dataset.
+    Универсальная функция: объединяет датасеты или возвращает один при only_dataset.
+    При объединении train-датасетов — использует WeightedRandomSampler для балансировки.
     """
     datasets = []
 
@@ -97,15 +98,15 @@ def make_dataset_and_loader(config, split: str, audio_feature_extractor: Type = 
         logging.info(f"[{dataset_name.upper()}] Split={split}: CSV={csv_path}, WAV_DIR={wav_dir}")
 
         dataset = DatasetMultiModalWithPretrainedExtractors(
-            csv_path = csv_path,
-            wav_dir  = wav_dir,
-            emotion_columns = config.emotion_columns,
-            split          = split,
-            config    = config,
+            csv_path                = csv_path,
+            wav_dir                 = wav_dir,
+            emotion_columns         = config.emotion_columns,
+            split                   = split,
+            config                  = config,
             audio_feature_extractor = audio_feature_extractor,
-            text_feature_extractor = text_feature_extractor,
-            whisper_model = whisper_model,
-            dataset_name = dataset_name
+            text_feature_extractor  = text_feature_extractor,
+            whisper_model           = whisper_model,
+            dataset_name            = dataset_name
         )
 
         datasets.append(dataset)
@@ -113,16 +114,48 @@ def make_dataset_and_loader(config, split: str, audio_feature_extractor: Type = 
     if not datasets:
         raise ValueError(f"⚠️ Для split='{split}' не найдено ни одного подходящего датасета.")
 
-    # Объединяем только если их несколько
-    full_dataset = datasets[0] if len(datasets) == 1 else ConcatDataset(datasets)
+    if len(datasets) == 1:
 
-    loader = DataLoader(
-        full_dataset,
-        batch_size=config.batch_size,
-        shuffle=(split == "train"),
-        num_workers=config.num_workers,
-        collate_fn=custom_collate_fn
-    )
+        full_dataset = datasets[0]
+        loader = DataLoader(
+            full_dataset,
+            batch_size=config.batch_size,
+            shuffle=(split == "train"),
+            num_workers=config.num_workers,
+            collate_fn=custom_collate_fn
+        )
+    else:
+        # Несколько датасетов — собираем веса
+        lengths = [len(d) for d in datasets]
+        total = sum(lengths)
+
+        logging.info(f"[!] Объединяем {len(datasets)} датасетов: {lengths} (total={total})")
+
+        weights = []
+        for d_len in lengths:
+            w = 1.0 / d_len
+            weights += [w] * d_len
+            logging.info(f"  ➜ Сэмплы из датасета с {d_len} примерами получают вес {w:.6f}")
+
+        full_dataset = ConcatDataset(datasets)
+
+        if split == "train":
+            sampler = WeightedRandomSampler(weights, num_samples=total, replacement=True)
+            loader = DataLoader(
+                full_dataset,
+                batch_size=config.batch_size,
+                sampler=sampler,
+                num_workers=config.num_workers,
+                collate_fn=custom_collate_fn
+            )
+        else:
+            loader = DataLoader(
+                full_dataset,
+                batch_size=config.batch_size,
+                shuffle=False,
+                num_workers=config.num_workers,
+                collate_fn=custom_collate_fn
+            )
 
     return full_dataset, loader
 

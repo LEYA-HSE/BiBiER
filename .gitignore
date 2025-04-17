@@ -178,7 +178,7 @@ db/
 logs/
 .old/
 .logs/
-results_greedy_*/
+results_*/
 modules/
 hub/
 features/

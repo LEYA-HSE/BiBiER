@@ -29,8 +29,7 @@ class ConfigLoader:
         # Эмоции, модальности
         # ---------------------------
         self.modalities = self.config.get("modalities", ["audio"])
-        self.emotion_columns = self.config.get("emotion_columns",
-                                            ["anger", "disgust", "fear", "happy", "neutral", "sad", "surprise"])
+        self.emotion_columns = self.config.get("emotion_columns", ["anger", "disgust", "fear", "happy", "neutral", "sad", "surprise"])
 
         # ---------------------------
         # DataLoader
@@ -80,6 +79,7 @@ class ConfigLoader:
         self.max_patience=train_cfg.get("max_patience", 10)
         self.save_prepared_data=train_cfg.get("save_prepared_data", True)
         self.save_feature_path=train_cfg.get("save_feature_path", 'features')
+        self.search_type=train_cfg.get("search_type", None)
 
         # ---------------------------
         # Embeddings
@@ -90,9 +90,9 @@ class ConfigLoader:
         self.audio_classifier_checkpoint = emb_cfg.get("audio_classifier_checkpoint", "best_audio_model.pt")
         self.text_classifier_checkpoint = emb_cfg.get("text_classifier_checkpoint", "best_text_model.pth")
 
-
         self.audio_embedding_dim = emb_cfg.get("audio_embedding_dim", 1024)
         self.text_embedding_dim  = emb_cfg.get("text_embedding_dim",  1024)
+        self.emb_normalize = emb_cfg.get("emb_normalize", True)
 
         self.audio_pooling = emb_cfg.get("audio_pooling", None)
         self.text_pooling  = emb_cfg.get("text_pooling",  None)
@@ -101,7 +101,6 @@ class ConfigLoader:
         self.max_audio_frames = emb_cfg.get("max_audio_frames", 16000)
 
         self.emb_device = emb_cfg.get("device", "cuda")
-        self.emb_normalize = emb_cfg.get("normalize_output", True)
 
         if __name__ == "__main__":
             self.log_config()
@@ -140,6 +139,7 @@ class ConfigLoader:
         logging.info(f"Max Patience={self.max_patience}")
         logging.info(f"Save Prepared Data={self.save_prepared_data}")
         logging.info(f"Path to Save Features={self.save_feature_path}")
+        logging.info(f"Search Type={self.search_type}")
 
         # Логируем embeddings
         logging.info("--- Embeddings Config ---")
