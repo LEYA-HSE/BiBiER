@@ -12,4 +12,4 @@ hidden_dim = 128
 num_transformer_heads = 2
 tr_layer_number = 1
 # out_features = 128
-num_graph_heads = 2
+# num_graph_heads = 2

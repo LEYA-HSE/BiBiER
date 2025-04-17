@@ -101,10 +101,21 @@ class PretrainedAudioEmbeddingExtractor:
         return embeddings.detach().cpu().numpy()
 
     def load_classifier_model_from_checkpoint(self, checkpoint_path):
-        checkpoint = torch.load(checkpoint_path, map_location=self.device)
-        exp_params = checkpoint['exp_params']
-        classifier_model = get_model_mamba(exp_params).to(self.device)
-        classifier_model.load_state_dict(checkpoint['model_state_dict'])
+        if checkpoint_path == "best_audio_model.pt":
+            checkpoint = torch.load(checkpoint_path, map_location=self.device)
+            exp_params = checkpoint['exp_params']
+            classifier_model = get_model_mamba(exp_params).to(self.device)
+            classifier_model.load_state_dict(checkpoint['model_state_dict'])
+        elif checkpoint_path == "best_audio_model_2.pt":
+            model_params = {
+                "input_size": 1024,
+                "d_model": 256,
+                "num_layers": 2,
+                "num_classes": 7,
+                "dropout": 0.2
+            }
+            classifier_model = get_model_mamba(model_params).to(self.device)
+            classifier_model.load_state_dict(torch.load(checkpoint_path, map_location=self.device))
         classifier_model.eval()
         return classifier_model
 
