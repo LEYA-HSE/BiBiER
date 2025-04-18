@@ -24,7 +24,6 @@ emotion_columns = ["anger", "disgust", "fear", "happy", "neutral", "sad", "surpr
 # DataLoader параметры
 # ---------------------------
 [dataloader]
-batch_size = 8
 num_workers = 0
 shuffle = true
 
@@ -61,14 +60,16 @@ use_whisper_for_nontrain_if_no_text = true
 [train]
 # Если указать random_seed, мы фиксируем seed => воспроизводимые результаты
 random_seed = 42 #  <=0 - рандомная выборка будет каждый раз
-subset_size = 20 # Если subset_size = 0 или subset_size не указан, значит используем весь датасет без ограничений.
+# subset_size = 20 # Если subset_size = 0 или subset_size не указан, значит используем весь датасет без ограничений.
 merge_probability = 0 # процент семплирования коротких файлов.
+batch_size = 8
 hidden_dim = 128 # число скрытых состояний в трансформере
 hidden_dim_gated = 128 # число скрытых состояния в gated
 num_transformer_heads = 2 # число голов в трансформере
 num_graph_heads = 2 # число голов в графе
 tr_layer_number = 1 # число слоев в трансформере
 mode = 'mean' # статистический пуллинг контекстных признаков
+optimizer = "adam"
 positional_encoding = false # примерение позиционного кодирования признаков
 dropout = 0 # процент отсева нейронов
 out_features = 128 # число классификационных признаков

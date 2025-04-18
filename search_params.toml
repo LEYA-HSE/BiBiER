@@ -1,15 +1,19 @@
 [grid]
-hidden_dim = [128, 256, 512]
-# hidden_dim_gated = [128, 256, 512]
-num_transformer_heads = [2, 4, 8]
-tr_layer_number = [1, 2, 3]
-# out_features= [128, 256, 512]
-# num_graph_heads = [2, 4, 8]
+hidden_dim           = [128, 256, 512]
+# hidden_dim_gated     = [128]
+num_transformer_heads= [2, 4, 8]
+tr_layer_number      = [1, 2]
+out_features         = [128, 256]
+# num_graph_heads      = [2, 4]
+dropout              = [0.0, 0.1, 0.2]
+positional_encoding  = [true, false]
 
 [defaults]
 hidden_dim = 128
 # hidden_dim_gated = 128
 num_transformer_heads = 2
 tr_layer_number = 1
-# out_features = 128
+out_features = 128
 # num_graph_heads = 2
+dropout = 0
+positional_encoding = false

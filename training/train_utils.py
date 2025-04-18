@@ -277,7 +277,19 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
     ).to(device)
 
     # Оптимизатор и лосс
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    # optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    if config.optimizer == "adam":
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    elif config.optimizer == "adamw":
+        optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
+    elif config.optimizer == "sgd":
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+    elif config.optimizer == "rmsprop":
+        optimizer = torch.optim.RMSprop(model.parameters(), lr=lr)
+    else:
+        raise ValueError(f"⛔ Неизвестный оптимизатор: {config.optimizer}")
+
+    logging.info(f"Используем оптимизатор: {config.optimizer}, learning rate: {lr}")
 
     class_weights = get_class_weights_from_loader(train_loader, num_classes)
     criterion = WeightedCrossEntropyLoss(class_weights)

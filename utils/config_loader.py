@@ -35,7 +35,6 @@ class ConfigLoader:
         # DataLoader
         # ---------------------------
         dataloader_cfg = self.config.get("dataloader", {})
-        self.batch_size = dataloader_cfg.get("batch_size", 1)
         self.num_workers = dataloader_cfg.get("num_workers", 0)
         self.shuffle = dataloader_cfg.get("shuffle", True)
 
@@ -62,12 +61,14 @@ class ConfigLoader:
         # ---------------------------
         train_cfg = self.config.get("train", {})
         self.random_seed = train_cfg.get("random_seed", None)
+        self.batch_size = train_cfg.get("batch_size", 8)
         self.subset_size = train_cfg.get("subset_size", 0)
         self.hidden_dim = train_cfg.get("hidden_dim", 256)
         self.hidden_dim_gated = train_cfg.get("hidden_dim_gated", 256)
         self.num_transformer_heads = train_cfg.get("num_transformer_heads", 8)
         self.num_graph_heads = train_cfg.get("num_graph_heads", 8)
         self.mode = train_cfg.get("mode", 'mean')
+        self.optimizer = train_cfg.get("optimizer", 'adam')
         self.positional_encoding = train_cfg.get("positional_encoding", True)
         self.merge_probability = train_cfg.get("merge_probability", 0.1)
         self.dropout = train_cfg.get("dropout", 0)
@@ -129,6 +130,7 @@ class ConfigLoader:
         logging.info(f"Num Heads in Transformer: {self.num_transformer_heads}")
         logging.info(f"Num Heads in Graph: {self.num_graph_heads}")
         logging.info(f"Mode stat pooling: {self.mode}")
+        logging.info(f"Optimizer: {self.optimizer}")
         logging.info(f"Positional Encoding: {self.positional_encoding}")
         logging.info(f"Number of transformer layers: {self.tr_layer_number}")
         logging.info(f"Dropout: {self.dropout}")
