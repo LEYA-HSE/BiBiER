@@ -14,7 +14,11 @@ from torch.nn.utils.rnn import pad_sequence
 
 from utils.losses import WeightedCrossEntropyLoss
 from utils.measures import uar, war, mf1, wf1
-from models.models import BiFormer, BiGraphFormer, BiGatedGraphFormer
+from models.models import (
+    BiFormer, BiGraphFormer, BiGatedGraphFormer,
+    PredictionsFusion, BiFormerWithProb, BiGatedFormer,
+    BiMamba, BiMambaWithProb
+)
 from data_loading.dataset_multimodal import DatasetMultiModal,DatasetMultiModalWithPretrainedExtractors
 from sklearn.utils.class_weight import compute_class_weight
 from lion_pytorch import Lion
@@ -35,10 +39,18 @@ def custom_collate_fn(batch):
     texts = [b["text"] for b in batch]
     text_tensor = torch.stack(texts)
 
+    audio_pred = [b["audio_pred"] for b in batch]
+    audio_pred = torch.stack(audio_pred)
+
+    text_pred = [b["text_pred"] for b in batch]
+    text_pred = torch.stack(text_pred)
+
     return {
         "audio": audio_tensor,
         "label": label_tensor,
-        "text": text_tensor
+        "text": text_tensor,
+        "audio_pred": audio_pred,
+        "text_pred": text_pred,
     }
 
 def get_class_weights_from_loader(train_loader, num_classes):
@@ -160,7 +172,7 @@ def make_dataset_and_loader(config, split: str, audio_feature_extractor: Type = 
 
     return full_dataset, loader
 
-def run_eval(model, loader, criterion, device="cuda"):
+def run_eval(model, loader, criterion, model_name,  device="cuda"):
     """
     Оценка модели на loader'е. Возвращает (loss, uar, war, mf1, wf1).
     """
@@ -178,12 +190,15 @@ def run_eval(model, loader, criterion, device="cuda"):
             audio  = batch["audio"].to(device)
             labels = batch["label"].to(device)
             texts  = batch["text"]
+            audio_pred  = batch["audio_pred"].to(device)
+            text_pred = batch["text_pred"].to(device)
 
-            # audio_emb = audio_extractor.extract(audio)
-            # text_emb  = text_extractor.extract(texts)
-
-            # logits = model(audio_emb, text_emb)
-            logits = model(audio, texts)
+            if "fusion" in model_name:
+                logits = model((audio_pred, text_pred))
+            elif "withprob" in model_name:
+                logits = model(audio, texts, audio_pred, text_pred)
+            else:
+                logits = model(audio, texts)
             target = labels.argmax(dim=1)
 
             loss = criterion(logits, target)
@@ -253,16 +268,23 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
     max_patience          = config.max_patience
 
     dict_models = {
-        'BiFormer': BiFormer,
-        'BiGraphFormer': BiGraphFormer,
-        'BiGatedGraphFormer': BiGatedGraphFormer,
-        # 'MultiModalTransformer_v5': MultiModalTransformer_v5,
-        # 'MultiModalTransformer_v4': MultiModalTransformer_v4,
-        # 'MultiModalTransformer_v3': MultiModalTransformer_v3
+        'BiFormer': BiFormer, # вход audio, texts
+        'BiGraphFormer': BiGraphFormer, # вход audio, texts
+        'BiGatedGraphFormer': BiGatedGraphFormer, # вход audio, texts
+        "BiGatedFormer": BiGatedFormer, # вход audio, texts
+        "BiMamba": BiMamba, # вход audio, texts
+        "PredictionsFusion": PredictionsFusion, # вход audio_pred, text_pred
+        "BiFormerWithProb": BiFormerWithProb, # вход audio, texts, audio_pred, text_pred
+        "BiMambaWithProb": BiMambaWithProb, # вход audio, texts, audio_pred, text_pred
     }
 
     model_cls = dict_models[config.model_name]
-    model = model_cls(
+    model_name = config.model_name.lower()
+
+    if model_name == 'predictionsfusion':
+        model = model_cls().to(device)
+    else:
+        model = model_cls(
         audio_dim             = config.audio_embedding_dim,
         text_dim              = config.text_embedding_dim,
         hidden_dim            = hidden_dim,
@@ -335,11 +357,19 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
             if batch is None:
                 continue
 
-            audio  = batch["audio"].to(device)
+            audio = batch["audio"].to(device)
             labels = batch["label"].to(device)
-            texts  = batch["text"]
+            texts = batch["text"]
+            audio_pred = batch["audio_pred"].to(device)
+            text_pred = batch["text_pred"].to(device)
 
-            logits = model(audio, texts)
+            if "fusion" in model_name:
+                logits = model((audio_pred, text_pred))
+            elif "withprob" in model_name:
+                logits = model(audio, texts, audio_pred, text_pred)
+            else:
+                logits = model(audio, texts)
+
             target = labels.argmax(dim=1)
             loss   = criterion(logits, target)
 
@@ -373,7 +403,7 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
 
         for name, loader in dev_loaders:
             d_loss, d_uar, d_war, d_mf1, d_wf1 = run_eval(
-                model, loader, criterion, device
+                model, loader, criterion, model_name, device
             )
             d_mean = np.mean([d_uar, d_war, d_mf1, d_wf1])
             dev_means.append(d_mean)
@@ -405,7 +435,7 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
         test_metrics_by_dataset = []
         for name, loader in test_loaders:
             t_loss, t_uar, t_war, t_mf1, t_wf1 = run_eval(
-                model, loader, criterion, device
+                model, loader, criterion, model_name, device
             )
             t_mean = np.mean([t_uar, t_war, t_mf1, t_wf1])
             logging.info(

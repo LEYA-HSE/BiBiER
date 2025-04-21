@@ -173,7 +173,7 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
 
         if self.save_prepared_data:
             self.meta = []
-            meta_filename = '{}_{}_seed_{}_subset_size_{}_feature_norm_{}_merge_prob_{}.pickle'.format(self.dataset_name, self.split, self.seed, self.subset_size, config.emb_normalize, config.merge_probability)
+            meta_filename = '{}_{}_seed_{}_subset_size_{}_audio_model_{}_feature_norm_{}_merge_prob_{}_pred.pickle'.format(self.dataset_name, self.split, config.audio_classifier_checkpoint[-4:-3], self.seed, self.subset_size, config.emb_normalize, config.merge_probability)
 
             self.load_data(os.path.join( self.save_feature_path, meta_filename))
 
@@ -309,13 +309,15 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
                 else:
                     logging.debug("Текст: CSV пустой и не вызываем Whisper для dev/test.")
                     text_final = ""
-        _, audion_emb = self.audio_feature_extractor.extract(waveform[0], self.sample_rate)
-        _, text_emb = self.text_feature_extractor.extract(text_final)
+        audio_pred, audion_emb = self.audio_feature_extractor.extract(waveform[0], self.sample_rate)
+        text_pred, text_emb = self.text_feature_extractor.extract(text_final)
 
         return {
             "audio": audion_emb[0],
             "label": label_vec,
-            "text": text_emb[0]
+            "text": text_emb[0],
+            "audio_pred": audio_pred[0],
+            "text_pred": text_pred[0]
         }
 
     def prepare_data(self):
