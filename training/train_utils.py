@@ -17,6 +17,7 @@ from utils.measures import uar, war, mf1, wf1
 from models.models import BiFormer, BiGraphFormer, BiGatedGraphFormer
 from data_loading.dataset_multimodal import DatasetMultiModal,DatasetMultiModalWithPretrainedExtractors
 from sklearn.utils.class_weight import compute_class_weight
+from lion_pytorch import Lion
 
 def custom_collate_fn(batch):
     """Собирает список образцов в единый батч, отбрасывая None (невалидные)."""
@@ -241,6 +242,8 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
     num_graph_heads       = config.num_graph_heads
     hidden_dim_gated      = config.hidden_dim_gated
     mode                  = config.mode
+    weight_decay          = config.weight_decay
+    momentum              = config.momentum
     positional_encoding   = config.positional_encoding
     dropout               = config.dropout
     out_features          = config.out_features
@@ -277,13 +280,22 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
     ).to(device)
 
     # Оптимизатор и лосс
-    # optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     if config.optimizer == "adam":
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        optimizer = torch.optim.Adam(
+            model.parameters(), lr=lr, weight_decay=weight_decay
+        )
     elif config.optimizer == "adamw":
-        optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
+        optimizer = torch.optim.AdamW(
+            model.parameters(), lr=lr, weight_decay=weight_decay
+        )
+    elif config.optimizer == "lion":
+        optimizer = Lion(
+            model.parameters(), lr=lr, weight_decay=weight_decay
+        )
     elif config.optimizer == "sgd":
-        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+        optimizer = torch.optim.SGD(
+            model.parameters(), lr=lr,momentum = momentum
+        )
     elif config.optimizer == "rmsprop":
         optimizer = torch.optim.RMSprop(model.parameters(), lr=lr)
     else:
@@ -387,20 +399,10 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
         mean_dev = np.mean(dev_means)
         scheduler.step(mean_dev)
 
-        if mean_dev > best_dev_mean:
-            best_dev_mean = mean_dev
-            patience_counter = 0
-            best_dev_metrics = {
-                "mean": mean_dev
-            }
-            best_dev_metrics["by_dataset"] = dev_metrics_by_dataset
-        else:
-            patience_counter += 1
-            if patience_counter >= max_patience:
-                logging.info(f"Early stopping: {max_patience} эпох без улучшения.")
-                break
+
 
         # --- TEST ---
+        test_metrics_by_dataset = []
         for name, loader in test_loaders:
             t_loss, t_uar, t_war, t_mf1, t_wf1 = run_eval(
                 model, loader, criterion, device
@@ -411,11 +413,40 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
                 f"MF1={t_mf1:.4f}, WF1={t_wf1:.4f}, MEAN={t_mean:.4f}"
             )
 
+            test_metrics_by_dataset.append({
+                "name": name,
+                "loss": t_loss,
+                "uar": t_uar,
+                "war": t_war,
+                "mf1": t_mf1,
+                "wf1": t_wf1,
+                "mean": t_mean,
+            })
+
             if csv_writer:
                 csv_writer.writerow(["test", epoch, name, t_loss, t_uar, t_war, t_mf1, t_wf1, t_mean])
+
+
+        if mean_dev > best_dev_mean:
+            best_dev_mean = mean_dev
+            patience_counter = 0
+            best_dev_metrics = {
+                "mean": mean_dev,
+                "by_dataset": dev_metrics_by_dataset
+            }
+            best_test_metrics = {
+                "mean": np.mean([ds["mean"] for ds in test_metrics_by_dataset]),
+                "by_dataset": test_metrics_by_dataset
+            }
+        else:
+            patience_counter += 1
+            if patience_counter >= max_patience:
+                logging.info(f"Early stopping: {max_patience} эпох без улучшения.")
+                break
+
+    logging.info("Тренировка завершена. Все split'ы обработаны!")
 
     if csv_file:
         csv_file.close()
 
-    logging.info("Тренировка завершена. Все split'ы обработаны!")
-    return best_dev_mean, best_dev_metrics
+    return best_dev_mean, best_dev_metrics, best_test_metrics

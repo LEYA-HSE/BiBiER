@@ -60,18 +60,20 @@ use_whisper_for_nontrain_if_no_text = true
 [train]
 # Если указать random_seed, мы фиксируем seed => воспроизводимые результаты
 random_seed = 42 #  <=0 - рандомная выборка будет каждый раз
-# subset_size = 20 # Если subset_size = 0 или subset_size не указан, значит используем весь датасет без ограничений.
+subset_size = 20 # Если subset_size = 0 или subset_size не указан, значит используем весь датасет без ограничений.
 merge_probability = 0 # процент семплирования коротких файлов.
 batch_size = 8
-hidden_dim = 128 # число скрытых состояний в трансформере
+hidden_dim = 256 # число скрытых состояний в трансформере
 hidden_dim_gated = 128 # число скрытых состояния в gated
 num_transformer_heads = 2 # число голов в трансформере
 num_graph_heads = 2 # число голов в графе
 tr_layer_number = 1 # число слоев в трансформере
 mode = 'mean' # статистический пуллинг контекстных признаков
-optimizer = "adam"
+optimizer = "lion" # adam adamw lion sgd rmsprop
+weight_decay = 0.0 # для adam подобных оптимизаторов
+momentum = 0.5 # для sgd
 positional_encoding = false # примерение позиционного кодирования признаков
-dropout = 0 # процент отсева нейронов
+dropout = 0.15 # процент отсева нейронов
 out_features = 128 # число классификационных признаков
 lr = 1e-4 # скорость обучения
 num_epochs = 2 # число эпох обучения
@@ -84,7 +86,7 @@ search_type = "exhaustive"  # greedy или "exhaustive", или "none"
 [embeddings]
 # audio_model = "amiriparian/ExHuBERT"  # Hugging Face имя модели для аудио
 audio_model = "audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim"  # Hugging Face имя модели для аудио
-audio_classifier_checkpoint = "best_audio_model.pt"
+audio_classifier_checkpoint = "best_audio_model_2.pt"
 text_classifier_checkpoint = "best_text_model.pth"
 text_model = "jinaai/jina-embeddings-v3"  # Hugging Face имя модели для текста
 # вынести в конфиг

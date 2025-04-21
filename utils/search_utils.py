@@ -2,34 +2,41 @@
 
 import copy
 import logging
-import numpy as np  # добавили для np.mean
+import numpy as np
 import datetime
 from itertools import product
 from typing import Any
 
-def format_result_box(step_num, param_name, candidate, fixed_params, dev_metrics, is_best=False):
+def format_result_box_dual(step_num, param_name, candidate, fixed_params, dev_metrics, test_metrics, is_best=False):
     title = f"Шаг {step_num}: {param_name} = {candidate}"
     fixed_lines = [f"{k} = {v}" for k, v in fixed_params.items()]
-    metric_lines = []
-    for k in ["uar", "war", "mf1", "wf1", "loss", "mean"]:
-        if k in dev_metrics:
-            val = dev_metrics[k]
-            if isinstance(val, float):
-                metric_lines.append(f"{k.upper():12} = {val:.4f}")
-            else:
-                metric_lines.append(f"{k.upper():12} = {val}")
 
-    if is_best and metric_lines and "MEAN" in metric_lines[-1].upper():
-        metric_lines[-1] += " ✅"
+    def format_metrics_block(metrics, label):
+        lines = [f"  Результаты ({label.upper()}):"]
+        for k in ["uar", "war", "mf1", "wf1", "loss", "mean"]:
+            if k in metrics:
+                val = metrics[k]
+                line = f"    {k.upper():12} = {val:.4f}" if isinstance(val, float) else f"    {k.upper():12} = {val}"
+                if is_best and label.lower() == "dev" and k.lower() == "mean":
+                    line += " ✅"
+                lines.append(line)
+        return lines
 
-    content_lines = []
-    content_lines.append(title)
-    content_lines.append("  Фиксировано:")
-    for line in fixed_lines:
-        content_lines.append(f"    {line}")
-    content_lines.append("  Результаты:")
-    for line in metric_lines:
-        content_lines.append(f"    {line}")
+    content_lines = [title, "  Фиксировано:"]
+    content_lines += [f"    {line}" for line in fixed_lines]
+
+    # DEV блок
+    content_lines += format_metrics_block(dev_metrics, "dev")
+    content_lines.append("")
+
+    # TEST блок
+    content_lines += format_metrics_block(test_metrics, "test")
+
+    # GAP
+    if "mean" in dev_metrics and "mean" in test_metrics:
+        gap_val = dev_metrics["mean"] - test_metrics["mean"]
+        gap_str = f"    GAP          = {gap_val:+.4f}"
+        content_lines.append(gap_str)
 
     max_width = max(len(line) for line in content_lines)
     border_top = "┌" + "─" * (max_width + 2) + "┐"
@@ -41,6 +48,8 @@ def format_result_box(step_num, param_name, candidate, fixed_params, dev_metrics
     box.append(border_bot)
 
     return "\n".join(box)
+
+
 
 def greedy_search(
     base_config,
@@ -73,9 +82,7 @@ def greedy_search(
         best_val_for_param = tried_value
         best_metric_for_param = float("-inf")
 
-        all_metrics = {}
-
-        # Вставляем результат для tried_value в список (если не первый шаг)
+        # Если не первый шаг — вставим текущую комбу
         if i != 0:
             config_default = copy.deepcopy(base_config)
             for k, v in current_best_params.items():
@@ -83,28 +90,31 @@ def greedy_search(
             logging.info(f"[ШАГ {i+1}] {param_name} = {tried_value} (ранее проверенный)")
 
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            if csv_prefix:
-                csv_filename = f"{csv_prefix}_{model_name}_{param_name}_{tried_value}_{timestamp}.csv"
-            else:
-                csv_filename = None
+            csv_filename = f"{csv_prefix}_{model_name}_{param_name}_{tried_value}_{timestamp}.csv" if csv_prefix else None
 
-            dev_mean_default, dev_metrics_default = train_fn(
+            dev_mean_default, dev_metrics_default, test_metrics_default = train_fn(
                 config_default,
                 train_loader,
                 dev_loader,
                 test_loader,
-                metrics_csv_path = csv_filename
+                metrics_csv_path=csv_filename
             )
 
-            all_metrics[tried_value] = (dev_mean_default, dev_metrics_default)
-            box_text = format_result_box(i+1, param_name, tried_value,
-                                         {k: v for k, v in current_best_params.items() if k != param_name},
-                                         dev_metrics_default, is_best=True)
+            box_text = format_result_box_dual(
+                step_num=i+1,
+                param_name=param_name,
+                candidate=tried_value,
+                fixed_params={k: v for k, v in current_best_params.items() if k != param_name},
+                dev_metrics=dev_metrics_default,
+                test_metrics=test_metrics_default,
+                is_best=True
+            )
 
             with open(overrides_file, "a", encoding="utf-8") as f:
                 f.write("\n" + box_text + "\n")
 
-            _log_dataset_metrics(dev_metrics_default, overrides_file)
+            _log_dataset_metrics(dev_metrics_default, overrides_file, label="dev")
+            _log_dataset_metrics(test_metrics_default, overrides_file, label="test")
 
             best_metric_for_param = dev_mean_default
 
@@ -116,35 +126,32 @@ def greedy_search(
             logging.info(f"[ШАГ {i+1}] {param_name} = {candidate}, (остальные {current_best_params})")
 
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            if csv_prefix:
-                csv_filename = f"{csv_prefix}_{model_name}_{param_name}_{candidate}_{timestamp}.csv"
-            else:
-                csv_filename = None
+            csv_filename = f"{csv_prefix}_{model_name}_{param_name}_{candidate}_{timestamp}.csv" if csv_prefix else None
 
-            dev_mean, dev_metrics = train_fn(
+            dev_mean, dev_metrics, test_metrics = train_fn(
                 config,
                 train_loader,
                 dev_loader,
                 test_loader,
-                metrics_csv_path = csv_filename
-                )
-
-            all_metrics[candidate] = (dev_mean, dev_metrics)
+                metrics_csv_path=csv_filename
+            )
 
             is_better = dev_mean > best_metric_for_param
-            box_text = format_result_box(
+            box_text = format_result_box_dual(
                 step_num=i+1,
                 param_name=param_name,
                 candidate=candidate,
                 fixed_params={k: v for k, v in current_best_params.items() if k != param_name},
                 dev_metrics=dev_metrics,
+                test_metrics=test_metrics,
                 is_best=is_better
             )
 
             with open(overrides_file, "a", encoding="utf-8") as f:
                 f.write("\n" + box_text + "\n")
 
-            _log_dataset_metrics(dev_metrics, overrides_file)
+            _log_dataset_metrics(dev_metrics, overrides_file, label="dev")
+            _log_dataset_metrics(test_metrics, overrides_file, label="test")
 
             if is_better:
                 best_val_for_param = candidate
@@ -161,6 +168,7 @@ def greedy_search(
 
     logging.info("Готово! Лучшие параметры подобраны.")
 
+
 def exhaustive_search(
     base_config,
     train_loader,
@@ -171,7 +179,6 @@ def exhaustive_search(
     param_grid: dict[str, list],
     csv_prefix: str = None
 ):
-
     all_param_names = list(param_grid.keys())
     model_name = getattr(base_config, "model_name", "UNKNOWN_MODEL")
 
@@ -195,12 +202,9 @@ def exhaustive_search(
         logging.info(f"\n[Комбинация #{combo_id}] {param_combo}")
 
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        if csv_prefix:
-            csv_filename = f"{csv_prefix}_{model_name}_combo{combo_id}_{timestamp}.csv"
-        else:
-            csv_filename = None
+        csv_filename = f"{csv_prefix}_{model_name}_combo{combo_id}_{timestamp}.csv" if csv_prefix else None
 
-        dev_mean, dev_metrics = train_fn(
+        dev_mean, dev_metrics, test_metrics = train_fn(
             config,
             train_loader,
             dev_loader,
@@ -209,19 +213,21 @@ def exhaustive_search(
         )
 
         is_better = dev_mean > best_metric
-        box_text = format_result_box(
+        box_text = format_result_box_dual(
             step_num=combo_id,
             param_name=" + ".join(all_param_names),
             candidate=str(combo),
             fixed_params={},
             dev_metrics=dev_metrics,
+            test_metrics=test_metrics,
             is_best=is_better
         )
 
         with open(overrides_file, "a", encoding="utf-8") as f:
             f.write("\n" + box_text + "\n")
 
-        _log_dataset_metrics(dev_metrics, overrides_file)
+        _log_dataset_metrics(dev_metrics, overrides_file, label="dev")
+        _log_dataset_metrics(test_metrics, overrides_file, label="test")
 
         if is_better:
             best_metric = dev_mean
@@ -249,16 +255,17 @@ def _compute_combined_avg(dev_metrics):
 
     return float(np.mean(values)) if values else None
 
-def _log_dataset_metrics(dev_metrics, file_path):
-    if "by_dataset" not in dev_metrics:
+
+def _log_dataset_metrics(metrics, file_path, label="dev"):
+    if "by_dataset" not in metrics:
         return
 
     with open(file_path, "a", encoding="utf-8") as f:
-        f.write("\n>>> Подробные метрики по каждому датасету:\n")
-        for ds in dev_metrics["by_dataset"]:
+        f.write(f"\n>>> Подробные метрики по каждому датасету ({label}):\n")
+        for ds in metrics["by_dataset"]:
             name = ds.get("name", "unknown")
             f.write(f"  - {name}:\n")
             for k in ["loss", "uar", "war", "mf1", "wf1", "mean"]:
                 if k in ds:
                     f.write(f"      {k.upper():4} = {ds[k]:.4f}\n")
-        f.write("<<< Конец подробных метрик\n")
+        f.write(f"<<< Конец подробных метрик ({label})\n")
