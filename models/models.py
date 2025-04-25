@@ -1105,14 +1105,14 @@ class BiGatedFormer(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
 class BiMamba(nn.Module):
-    def __init__(self, audio_dim=1024, text_dim=1024, seg_len=44, hidden_dim=512, d_state=16,
-                d_discr=None, num_transformer_heads=4, tr_layer_number=2, dropout=0.1, hidden_dim_gated=2, num_graph_heads=2, mode='',positional_encoding=False,
+    def __init__(self, audio_dim=1024, text_dim=1024, seg_len=44, hidden_dim=512, mamba_d_state=16,
+                d_discr=None, mamba_ker_size=4, mamba_layer_number=2, dropout=0.1, mode='', positional_encoding=False,
                 out_features=128, num_classes=7, device="cuda"):
         super(BiMamba, self).__init__()
 
         self.hidden_dim = hidden_dim
         self.seg_len = seg_len
-        self.num_mamba_layers = tr_layer_number
+        self.num_mamba_layers = mamba_layer_number
         self.device = device
 
         # Проекционные слои для каждой модальности
@@ -1139,9 +1139,9 @@ class BiMamba(nn.Module):
         mamba_params = {
             'd_input': hidden_dim,
             'd_model': hidden_dim,
-            'd_state': d_state,
+            'd_state': mamba_d_state,
             'd_discr': d_discr,
-            'ker_size': num_transformer_heads
+            'ker_size': mamba_ker_size
         }
 
         self.mamba_blocks = nn.ModuleList([
@@ -1229,14 +1229,14 @@ class BiMamba(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
 class BiMambaWithProb(nn.Module):
-    def __init__(self, audio_dim=1024, text_dim=1024, seg_len=44, hidden_dim=512, d_state=16,
-                d_discr=None, num_transformer_heads=4, tr_layer_number=2, dropout=0.1, hidden_dim_gated=2, num_graph_heads=2, mode='',positional_encoding=False,
+    def __init__(self, audio_dim=1024, text_dim=1024, seg_len=44, hidden_dim=512, mamba_d_state=16,
+                d_discr=None, mamba_ker_size=4, mamba_layer_number=2, dropout=0.1, mode='',positional_encoding=False,
                 out_features=128, num_classes=7, device="cuda"):
         super(BiMambaWithProb, self).__init__()
 
         self.hidden_dim = hidden_dim
         self.seg_len = seg_len
-        self.num_mamba_layers = tr_layer_number
+        self.num_mamba_layers = mamba_layer_number
         self.device = device
 
         # Проекционные слои для каждой модальности
@@ -1263,9 +1263,9 @@ class BiMambaWithProb(nn.Module):
         mamba_params = {
             'd_input': hidden_dim,
             'd_model': hidden_dim,
-            'd_state': d_state,
+            'd_state': mamba_d_state,
             'd_discr': d_discr,
-            'ker_size': num_transformer_heads
+            'ker_size': mamba_ker_size
         }
 
         self.mamba_blocks = nn.ModuleList([

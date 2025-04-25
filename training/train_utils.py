@@ -256,6 +256,9 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
     num_transformer_heads = config.num_transformer_heads
     num_graph_heads       = config.num_graph_heads
     hidden_dim_gated      = config.hidden_dim_gated
+    mamba_d_state         = config.mamba_d_state
+    mamba_ker_size        = config.mamba_ker_size
+    mamba_layer_number    = config.mamba_layer_number
     mode                  = config.mode
     weight_decay          = config.weight_decay
     momentum              = config.momentum
@@ -283,23 +286,43 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
 
     if model_name == 'predictionsfusion':
         model = model_cls().to(device)
-    else:
+
+    elif 'mamba' in model_name:
+        # Особые параметры для Mamba-семейства
         model = model_cls(
-        audio_dim             = config.audio_embedding_dim,
-        text_dim              = config.text_embedding_dim,
-        hidden_dim            = hidden_dim,
-        hidden_dim_gated      = hidden_dim_gated,
-        num_transformer_heads = num_transformer_heads,
-        num_graph_heads       = num_graph_heads,
-        seg_len               = config.max_tokens,
-        mode                  = mode,
-        dropout               = dropout,
-        positional_encoding   = positional_encoding,
-        out_features          = out_features,
-        tr_layer_number       = tr_layer_number,
-        device                = device,
-        num_classes           = num_classes
-    ).to(device)
+            audio_dim             = config.audio_embedding_dim,
+            text_dim              = config.text_embedding_dim,
+            hidden_dim            = hidden_dim,
+            mamba_d_state         = mamba_d_state,
+            mamba_ker_size        = mamba_ker_size,
+            mamba_layer_number    = mamba_layer_number,
+            seg_len               = config.max_tokens,
+            mode                  = mode,
+            dropout               = dropout,
+            positional_encoding   = positional_encoding,
+            out_features          = out_features,
+            device                = device,
+            num_classes           = num_classes
+        ).to(device)
+
+    else:
+        # Обычные модели
+        model = model_cls(
+            audio_dim             = config.audio_embedding_dim,
+            text_dim              = config.text_embedding_dim,
+            hidden_dim            = hidden_dim,
+            hidden_dim_gated      = hidden_dim_gated,
+            num_transformer_heads = num_transformer_heads,
+            num_graph_heads       = num_graph_heads,
+            seg_len               = config.max_tokens,
+            mode                  = mode,
+            dropout               = dropout,
+            positional_encoding   = positional_encoding,
+            out_features          = out_features,
+            tr_layer_number       = tr_layer_number,
+            device                = device,
+            num_classes           = num_classes
+        ).to(device)
 
     # Оптимизатор и лосс
     if config.optimizer == "adam":
