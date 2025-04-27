@@ -19,7 +19,8 @@ from models.models import (
     PredictionsFusion, BiFormerWithProb, BiGatedFormer,
     BiMamba, BiMambaWithProb
 )
-from data_loading.dataset_multimodal import DatasetMultiModal,DatasetMultiModalWithPretrainedExtractors
+from utils.schedulers import SmartScheduler
+from data_loading.dataset_multimodal import DatasetMultiModalWithPretrainedExtractors
 from sklearn.utils.class_weight import compute_class_weight
 from lion_pytorch import Lion
 
@@ -269,6 +270,7 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
     num_epochs            = config.num_epochs
     tr_layer_number       = config.tr_layer_number
     max_patience          = config.max_patience
+    scheduler_type        = config.scheduler_type
 
     dict_models = {
         'BiFormer': BiFormer, # вход audio, texts
@@ -354,12 +356,12 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
     logging.info("Class weights: " + ", ".join(f"{name}={weight:.4f}" for name, weight in zip(config.emotion_columns, class_weights)))
 
     # LR Scheduler
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        mode="max",
-        factor=0.5,
-        patience=2,
-        min_lr=1e-7
+    steps_per_epoch = sum(1 for batch in train_loader if batch is not None)
+    scheduler = SmartScheduler(
+        scheduler_type=scheduler_type,
+        optimizer=optimizer,
+        config=config,
+        steps_per_epoch=steps_per_epoch
     )
 
     # Early stopping по dev
@@ -399,6 +401,9 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
+            # Если scheduler - One cycle
+            scheduler.step(batch_level=True)
 
             bs = audio.shape[0]
             total_loss += loss.item() * bs
@@ -451,8 +456,6 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
 
         mean_dev = np.mean(dev_means)
         scheduler.step(mean_dev)
-
-
 
         # --- TEST ---
         test_metrics_by_dataset = []

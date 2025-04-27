@@ -21,12 +21,12 @@ class ConfigLoader:
         self.split = self.config.get("split", "train")
 
         # ---------------------------
-        # Пути к данным (многодатасетная поддержка)
+        # Пути к данным
         # ---------------------------
         self.datasets = self.config.get("datasets", {})
 
         # ---------------------------
-        # Эмоции, модальности
+        # Модальности и эмоции
         # ---------------------------
         self.modalities = self.config.get("modalities", ["audio"])
         self.emotion_columns = self.config.get("emotion_columns", ["anger", "disgust", "fear", "happy", "neutral", "sad", "surprise"])
@@ -57,55 +57,68 @@ class ConfigLoader:
         self.use_whisper_for_nontrain_if_no_text = text_cfg.get("use_whisper_for_nontrain_if_no_text", True)
 
         # ---------------------------
-        # Параметры для тренировки
+        # Тренировка: общие
         # ---------------------------
-        train_cfg = self.config.get("train", {})
-        self.random_seed = train_cfg.get("random_seed", None)
-        self.batch_size = train_cfg.get("batch_size", 8)
-        self.subset_size = train_cfg.get("subset_size", 0)
-        self.hidden_dim = train_cfg.get("hidden_dim", 256)
-        self.hidden_dim_gated = train_cfg.get("hidden_dim_gated", 256)
-        self.num_transformer_heads = train_cfg.get("num_transformer_heads", 8)
-        self.num_graph_heads = train_cfg.get("num_graph_heads", 8)
-        self.mode = train_cfg.get("mode", 'mean')
-        self.optimizer = train_cfg.get("optimizer", 'adam')
-        self.weight_decay = train_cfg.get("weight_decay", 0)
-        self.momentum = train_cfg.get("momentum", 0.9)
-        self.positional_encoding = train_cfg.get("positional_encoding", True)
-        self.merge_probability = train_cfg.get("merge_probability", 0.1)
-        self.dropout = train_cfg.get("dropout", 0)
-        self.out_features = train_cfg.get("out_features", 128)
-        self.lr = train_cfg.get("lr", 1e-4)
-        self.num_epochs = train_cfg.get("num_epochs", 100)
-        self.model_name=train_cfg.get("model_name", "BiFormer")
-        self.tr_layer_number=train_cfg.get("tr_layer_number", 1)
-        self.mamba_d_state=train_cfg.get("mamba_d_state", 16)
-        self.mamba_ker_size=train_cfg.get("mamba_ker_size", 4)
-        self.mamba_layer_number=train_cfg.get("mamba_layer_number", 3)
-        self.max_patience=train_cfg.get("max_patience", 10)
-        self.save_prepared_data=train_cfg.get("save_prepared_data", True)
-        self.save_feature_path=train_cfg.get("save_feature_path", 'features')
-        self.search_type=train_cfg.get("search_type", None)
+        train_general = self.config.get("train", {}).get("general", {})
+        self.random_seed = train_general.get("random_seed", 42)
+        self.subset_size = train_general.get("subset_size", 0)
+        self.merge_probability = train_general.get("merge_probability", 0)
+        self.batch_size = train_general.get("batch_size", 8)
+        self.num_epochs = train_general.get("num_epochs", 100)
+        self.max_patience = train_general.get("max_patience", 10)
+        self.save_prepared_data = train_general.get("save_prepared_data", True)
+        self.save_feature_path = train_general.get("save_feature_path", "./features/")
+        self.search_type = train_general.get("search_type", "none")
 
         # ---------------------------
-        # Embeddings
+        # Тренировка: параметры модели
+        # ---------------------------
+        train_model = self.config.get("train", {}).get("model", {})
+        self.model_name = train_model.get("model_name", "BiFormer")
+        self.hidden_dim = train_model.get("hidden_dim", 256)
+        self.hidden_dim_gated = train_model.get("hidden_dim_gated", 256)
+        self.num_transformer_heads = train_model.get("num_transformer_heads", 8)
+        self.num_graph_heads = train_model.get("num_graph_heads", 8)
+        self.tr_layer_number = train_model.get("tr_layer_number", 1)
+        self.mamba_d_state = train_model.get("mamba_d_state", 16)
+        self.mamba_ker_size = train_model.get("mamba_ker_size", 4)
+        self.mamba_layer_number = train_model.get("mamba_layer_number", 3)
+        self.positional_encoding = train_model.get("positional_encoding", True)
+        self.dropout = train_model.get("dropout", 0.0)
+        self.out_features = train_model.get("out_features", 128)
+        self.mode = train_model.get("mode", "mean")
+
+        # ---------------------------
+        # Тренировка: оптимизатор
+        # ---------------------------
+        train_optimizer = self.config.get("train", {}).get("optimizer", {})
+        self.optimizer = train_optimizer.get("optimizer", "adam")
+        self.lr = train_optimizer.get("lr", 1e-4)
+        self.weight_decay = train_optimizer.get("weight_decay", 0.0)
+        self.momentum = train_optimizer.get("momentum", 0.9)
+
+        # ---------------------------
+        # Тренировка: шедулер
+        # ---------------------------
+        train_scheduler = self.config.get("train", {}).get("scheduler", {})
+        self.scheduler_type = train_scheduler.get("scheduler_type", "plateau")
+        self.warmup_ratio = train_scheduler.get("warmup_ratio", 0.1)
+
+        # ---------------------------
+        # Эмбеддинги
         # ---------------------------
         emb_cfg = self.config.get("embeddings", {})
         self.audio_model_name = emb_cfg.get("audio_model", "amiriparian/ExHuBERT")
-        self.text_model_name  = emb_cfg.get("text_model",  "jinaai/jina-embeddings-v3")
+        self.text_model_name  = emb_cfg.get("text_model", "jinaai/jina-embeddings-v3")
         self.audio_classifier_checkpoint = emb_cfg.get("audio_classifier_checkpoint", "best_audio_model.pt")
         self.text_classifier_checkpoint = emb_cfg.get("text_classifier_checkpoint", "best_text_model.pth")
-
         self.audio_embedding_dim = emb_cfg.get("audio_embedding_dim", 1024)
-        self.text_embedding_dim  = emb_cfg.get("text_embedding_dim",  1024)
+        self.text_embedding_dim  = emb_cfg.get("text_embedding_dim", 1024)
         self.emb_normalize = emb_cfg.get("emb_normalize", True)
-
         self.audio_pooling = emb_cfg.get("audio_pooling", None)
-        self.text_pooling  = emb_cfg.get("text_pooling",  None)
-
+        self.text_pooling  = emb_cfg.get("text_pooling", None)
         self.max_tokens = emb_cfg.get("max_tokens", 256)
         self.max_audio_frames = emb_cfg.get("max_audio_frames", 16000)
-
         self.emb_device = emb_cfg.get("device", "cuda")
 
         if __name__ == "__main__":
@@ -136,6 +149,8 @@ class ConfigLoader:
         logging.info(f"Num Heads in Graph: {self.num_graph_heads}")
         logging.info(f"Mode stat pooling: {self.mode}")
         logging.info(f"Optimizer: {self.optimizer}")
+        logging.info(f"Scheduler Type: {self.scheduler_type}")
+        logging.info(f"Warmup Ratio: {self.warmup_ratio}")
         logging.info(f"Weight Decay for Adam: {self.weight_decay}")
         logging.info(f"Momentum (SGD): {self.momentum}")
         logging.info(f"Positional Encoding: {self.positional_encoding}")

@@ -19,8 +19,12 @@ from data_loading.feature_extractor import PretrainedAudioEmbeddingExtractor, Pr
 
 def main():
 
-    #  Создаём директорию для результатов, копируем config
-    results_dir = f"results_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+    #  Грузим конфиг
+    base_config = ConfigLoader("config.toml")
+
+    model_name = base_config.model_name.replace("/", "_").replace(" ", "_").lower()
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    results_dir = f"results_{model_name}_{timestamp}"
     os.makedirs(results_dir, exist_ok=True)
 
     epochlog_dir = os.path.join(results_dir, "metrics_by_epoch")
@@ -30,10 +34,7 @@ def main():
     log_file = os.path.join(results_dir, "session_log.txt")
     setup_logger(logging.INFO, log_file=log_file)
 
-    #  Грузим конфиг
-    base_config = ConfigLoader("config.toml")
     base_config.show_config()
-
     shutil.copy("config.toml", os.path.join(results_dir, "config_copy.toml"))
     #  Файл, куда будет писать наш жадный поиск
     overrides_file = os.path.join(results_dir, "overrides.txt")

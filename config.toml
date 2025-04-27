@@ -55,36 +55,52 @@ whisper_device = "cuda"
 use_whisper_for_nontrain_if_no_text = true
 
 # ---------------------------
-# Параметры для тренировки
+# Общие параметры тренировки
 # ---------------------------
-[train]
-# Если указать random_seed, мы фиксируем seed => воспроизводимые результаты
-random_seed = 42 #  <=0 - рандомная выборка будет каждый раз
-subset_size = 20 # Если subset_size = 0 или subset_size не указан, значит используем весь датасет без ограничений.
-merge_probability = 0 # процент семплирования коротких файлов.
-batch_size = 8
-hidden_dim = 256 # число скрытых состояний в трансформере
-hidden_dim_gated = 128 # число скрытых состояния в gated
-num_transformer_heads = 2 # число голов в трансформере
-num_graph_heads = 2 # число голов в графе
-tr_layer_number = 1 # число слоев в трансформере
-mamba_d_state = 16
-mamba_ker_size = 6
-mamba_layer_number = 5
-mode = 'mean' # статистический пуллинг контекстных признаков
-optimizer = "sgd" # adam adamw lion sgd rmsprop
-weight_decay = 0.0 # для adam подобных оптимизаторов
-momentum = 0.9 # для sgd
-positional_encoding = false # примерение позиционного кодирования признаков
-dropout = 0.15 # процент отсева нейронов
-out_features = 128 # число классификационных признаков
-lr = 1e-4 # скорость обучения
-num_epochs = 2 # число эпох обучения
-model_name = "BiMamba" # имя класса модели BiGraphFormer BiFormer BiGatedGraphFormer BiGatedFormer BiMamba BiFormerWithProb BiMambaWithProb PredictionsFusion
-max_patience = 10 # Параметр ранней остановки обучения
-save_prepared_data = true # Сохранить эмбеддинги
-save_feature_path = './features/' # Путь для сохранения эмбеддингов
-search_type = "exhaustive"  # greedy или "exhaustive", или "none"
+[train.general]
+random_seed = 42         # фиксируем random seed для воспроизводимости (0 = каждый раз разный)
+subset_size = 20         # ограничение на количество примеров (0 = использовать весь датасет)
+merge_probability = 0    # процент склеивания коротких файлов
+batch_size = 8           # размер батча
+num_epochs = 2           # число эпох тренировки
+max_patience = 10        # максимальное число эпох без улучшений (для Early Stopping)
+save_prepared_data = true # сохранять извлеченные признаки (эмбеддинги)
+save_feature_path = './features/' # путь для сохранения эмбеддингов
+search_type = "exhaustive" # стратегия поиска: "greedy", "exhaustive" или "none"
+
+# ---------------------------
+# Параметры модели
+# ---------------------------
+[train.model]
+model_name = "BiMamba"    # название модели (BiGraphFormer, BiFormer, BiGatedGraphFormer, BiGatedFormer, BiMamba, PredictionsFusion, BiFormerWithProb, BiMambaWithProb)
+hidden_dim = 256          # размер скрытого состояния
+hidden_dim_gated = 128    # скрытое состояние для gated механизмов
+num_transformer_heads = 2 # количество attention голов в трансформере
+num_graph_heads = 2       # количество голов в граф-механизме
+tr_layer_number = 1       # количество слоев в трансформере
+mamba_d_state = 16        # размер состояния в Mamba
+mamba_ker_size = 6        # размер кернела в Mamba
+mamba_layer_number = 5    # количество слоев Mamba
+positional_encoding = false # использовать ли позиционное кодирование
+dropout = 0.15            # dropout между слоями
+out_features = 128        # размер финальных признаков перед классификацией
+mode = 'mean'             # способ агрегации признаков (например, "mean", "max", и т.д.)
+
+# ---------------------------
+# Параметры оптимизатора
+# ---------------------------
+[train.optimizer]
+optimizer = "adam"        # тип оптимизатора: "adam", "adamw", "lion", "sgd", "rmsprop"
+lr = 1e-4                 # начальная скорость обучения
+weight_decay = 0.0        # weight decay для регуляризации
+momentum = 0.9            # momentum (используется только в SGD)
+
+# ---------------------------
+# Параметры шедулера
+# ---------------------------
+[train.scheduler]
+scheduler_type = "huggingface_cosine_with_restarts" # тип шедулера: "none", "plateau", "cosine", "onecycle" или HuggingFace-стиль ("huggingface_linear", "huggingface_cosine" "huggingface_cosine_with_restarts" и т.д.)
+warmup_ratio = 0.1         # отношение количества warmup-итераций к общему числу шагов (0.1 = 10%)
 
 [embeddings]
 # audio_model = "amiriparian/ExHuBERT"  # Hugging Face имя модели для аудио
@@ -92,15 +108,12 @@ audio_model = "audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim"  # Hugging
 audio_classifier_checkpoint = "best_audio_model_2.pt"
 text_classifier_checkpoint = "best_text_model.pth"
 text_model = "jinaai/jina-embeddings-v3"  # Hugging Face имя модели для текста
-# вынести в конфиг
 audio_embedding_dim = 256  # размерность аудио-эмбеддинга
 text_embedding_dim = 1024   # размерность текст-эмбеддинга
 emb_normalize = false  # нормализовать ли вектор L2-нормой
+max_tokens = 95         # ограничение на длину текста (токенов) при токенизации
+max_audio_frames = 64000 # ограничение на длину аудио (семплов) до усечения
+device = "cuda"          # "cuda" или "cpu", куда грузить модель
 
 # audio_pooling = "mean"        # "mean", "cls", "max", "min", "last", "attention"
 # text_pooling = "cls"          # "mean", "cls", "max", "min", "last", "sum", "attention"
-
-max_tokens = 95         # ограничение на длину текста (токенов) при токенизации
-max_audio_frames = 64000 # ограничение на длину аудио (семплов) до усечения
-
-device = "cuda"          # "cuda" или "cpu", куда грузить модель

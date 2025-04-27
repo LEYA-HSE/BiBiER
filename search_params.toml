@@ -1,15 +1,16 @@
 [grid]
-hidden_dim            = [128, 256, 512]
-mamba_d_state = [4, 8, 16]
-mamba_ker_size = [2, 3, 4]
-mamba_layer_number = [2, 3, 4]
+scheduler_type = ["huggingface_cosine_with_restarts", "huggingface_linear", "cosine", "onecycle"]
+hidden_dim            = [256, 512]
+mamba_d_state = [8, 16]
+# mamba_ker_size = [3, 4]
+# mamba_layer_number = [3, 4, 5]
 # hidden_dim_gated     = [128]
 # num_transformer_heads = [2, 4, 8]
 # tr_layer_number       = [1, 2]
 # out_features         = [128, 256]
 # num_graph_heads      = [2, 4]
 # dropout              = [0.0, 0.1, 0.2]
-# positional_encoding  = [true, false] # false дает лучший результат
+# positional_encoding  = [true, false]
 
 [defaults]
 hidden_dim = 128
