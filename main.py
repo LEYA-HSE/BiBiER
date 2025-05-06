@@ -32,9 +32,11 @@ def main():
 
     # Настраиваем logging
     log_file = os.path.join(results_dir, "session_log.txt")
-    setup_logger(logging.INFO, log_file=log_file)
+    setup_logger(logging.DEBUG, log_file=log_file)
 
+    #  Грузим конфиг
     base_config.show_config()
+
     shutil.copy("config.toml", os.path.join(results_dir, "config_copy.toml"))
     #  Файл, куда будет писать наш жадный поиск
     overrides_file = os.path.join(results_dir, "overrides.txt")
@@ -61,6 +63,10 @@ def main():
 
         dev_loaders.append((dataset_name, dev_loader))
         test_loaders.append((dataset_name, test_loader))
+
+    if base_config.prepare_only:
+        logging.info("== Режим prepare_only: только подготовка данных, без обучения ==")
+        return
 
     search_config = toml.load("search_params.toml")
     param_grid = dict(search_config["grid"])

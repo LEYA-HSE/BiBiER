@@ -37,6 +37,7 @@ class ConfigLoader:
         dataloader_cfg = self.config.get("dataloader", {})
         self.num_workers = dataloader_cfg.get("num_workers", 0)
         self.shuffle = dataloader_cfg.get("shuffle", True)
+        self.prepare_only = dataloader_cfg.get("prepare_only", False)
 
         # ---------------------------
         # Аудио
@@ -44,6 +45,10 @@ class ConfigLoader:
         audio_cfg = self.config.get("audio", {})
         self.sample_rate = audio_cfg.get("sample_rate", 16000)
         self.wav_length = audio_cfg.get("wav_length", 2)
+        self.save_merged_audio = audio_cfg.get("save_merged_audio", True)
+        self.merged_audio_base_path = audio_cfg.get("merged_audio_base_path", "saved_merges")
+        self.merged_audio_suffix = audio_cfg.get("merged_audio_suffix", "_merged")
+        self.force_remerge = audio_cfg.get("force_remerge", False)
 
         # ---------------------------
         # Whisper / Текст
@@ -118,8 +123,16 @@ class ConfigLoader:
         self.audio_pooling = emb_cfg.get("audio_pooling", None)
         self.text_pooling  = emb_cfg.get("text_pooling", None)
         self.max_tokens = emb_cfg.get("max_tokens", 256)
-        self.max_audio_frames = emb_cfg.get("max_audio_frames", 16000)
         self.emb_device = emb_cfg.get("device", "cuda")
+
+        # ---------------------------
+        # Синтетика
+        # ---------------------------
+        textgen_cfg = self.config.get("textgen", {})
+        self.model_name = textgen_cfg.get("model_name", "deepseek-ai/DeepSeek-R1-Distill-Llama-8B")
+        self.max_new_tokens = textgen_cfg.get("max_new_tokens", 50)
+        self.temperature = textgen_cfg.get("temperature", 1.0)
+        self.top_p = textgen_cfg.get("top_p", 0.95)
 
         if __name__ == "__main__":
             self.log_config()
@@ -173,7 +186,6 @@ class ConfigLoader:
         logging.info(f"Audio Model: {self.audio_model_name}, Text Model: {self.text_model_name}")
         logging.info(f"Audio dim={self.audio_embedding_dim}, Text dim={self.text_embedding_dim}")
         logging.info(f"Audio pooling={self.audio_pooling}, Text pooling={self.text_pooling}")
-        logging.info(f"Max tokens={self.max_tokens}, Max audio frames={self.max_audio_frames}")
         logging.info(f"Emb device={self.emb_device}, Normalize={self.emb_normalize}")
 
     def show_config(self):

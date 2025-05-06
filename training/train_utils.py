@@ -402,7 +402,7 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
             loss.backward()
             optimizer.step()
 
-            # Если scheduler - One cycle
+            # Если scheduler - One cycle или с Hugging Face
             scheduler.step(batch_level=True)
 
             bs = audio.shape[0]

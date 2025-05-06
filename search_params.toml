@@ -1,6 +1,6 @@
 [grid]
 scheduler_type = ["huggingface_cosine_with_restarts", "huggingface_linear", "cosine", "onecycle"]
-hidden_dim            = [256, 512]
+hidden_dim            = [768, 512]
 mamba_d_state = [8, 16]
 # mamba_ker_size = [3, 4]
 # mamba_layer_number = [3, 4, 5]

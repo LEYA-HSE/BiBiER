@@ -20,12 +20,14 @@ modalities = ["audio"]
 # emotion_columns = ["neutral", "happy", "sad", "anger", "surprise", "disgust", "fear"]
 emotion_columns = ["anger", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
 
+
 # ---------------------------
 # DataLoader параметры
 # ---------------------------
 [dataloader]
 num_workers = 0
 shuffle = true
+prepare_only = true
 
 # ---------------------------
 # Аудио
@@ -33,10 +35,10 @@ shuffle = true
 [audio]
 sample_rate = 16000           # Целевая частота дискретизации
 wav_length = 4                # Целевая длина (в секундах) для аудио
-
-[audio_saving]
-save_processed_audio = false
-audio_output_dir = "{base_dir}\\output_wavs"
+save_merged_audio = true
+merged_audio_base_path = "saved_merges"
+merged_audio_suffix = "_merged"
+force_remerge = false
 
 # ---------------------------
 # Whisper и текст
@@ -59,32 +61,32 @@ use_whisper_for_nontrain_if_no_text = true
 # ---------------------------
 [train.general]
 random_seed = 42         # фиксируем random seed для воспроизводимости (0 = каждый раз разный)
-subset_size = 20         # ограничение на количество примеров (0 = использовать весь датасет)
-merge_probability = 0    # процент склеивания коротких файлов
+subset_size = 100         # ограничение на количество примеров (0 = использовать весь датасет)
+merge_probability = 0.15    # процент склеивания коротких файлов
 batch_size = 8           # размер батча
 num_epochs = 2           # число эпох тренировки
 max_patience = 10        # максимальное число эпох без улучшений (для Early Stopping)
 save_prepared_data = true # сохранять извлеченные признаки (эмбеддинги)
 save_feature_path = './features/' # путь для сохранения эмбеддингов
-search_type = "exhaustive" # стратегия поиска: "greedy", "exhaustive" или "none"
+search_type = "none" # стратегия поиска: "greedy", "exhaustive" или "none"
 
 # ---------------------------
 # Параметры модели
 # ---------------------------
 [train.model]
-model_name = "BiMamba"    # название модели (BiGraphFormer, BiFormer, BiGatedGraphFormer, BiGatedFormer, BiMamba, PredictionsFusion, BiFormerWithProb, BiMambaWithProb)
-hidden_dim = 256          # размер скрытого состояния
-hidden_dim_gated = 128    # скрытое состояние для gated механизмов
-num_transformer_heads = 2 # количество attention голов в трансформере
-num_graph_heads = 2       # количество голов в граф-механизме
-tr_layer_number = 1       # количество слоев в трансформере
-mamba_d_state = 16        # размер состояния в Mamba
-mamba_ker_size = 6        # размер кернела в Mamba
-mamba_layer_number = 5    # количество слоев Mamba
+model_name = "BiMambaWithProb"    # название модели (BiGraphFormer, BiFormer, BiGatedGraphFormer, BiGatedFormer, BiMamba, PredictionsFusion, BiFormerWithProb, BiMambaWithProb)
+hidden_dim = 256            # размер скрытого состояния
+hidden_dim_gated = 128      # скрытое состояние для gated механизмов
+num_transformer_heads = 2   # количество attention голов в трансформере
+num_graph_heads = 2         # количество голов в граф-механизме
+tr_layer_number = 1         # количество слоев в трансформере
+mamba_d_state = 16          # размер состояния в Mamba
+mamba_ker_size = 6          # размер кернела в Mamba
+mamba_layer_number = 5      # количество слоев Mamba
 positional_encoding = false # использовать ли позиционное кодирование
-dropout = 0.15            # dropout между слоями
-out_features = 128        # размер финальных признаков перед классификацией
-mode = 'mean'             # способ агрегации признаков (например, "mean", "max", и т.д.)
+dropout = 0.15              # dropout между слоями
+out_features = 128          # размер финальных признаков перед классификацией
+mode = 'mean'               # способ агрегации признаков (например, "mean", "max", и т.д.)
 
 # ---------------------------
 # Параметры оптимизатора
@@ -99,7 +101,7 @@ momentum = 0.9            # momentum (используется только в S
 # Параметры шедулера
 # ---------------------------
 [train.scheduler]
-scheduler_type = "huggingface_cosine_with_restarts" # тип шедулера: "none", "plateau", "cosine", "onecycle" или HuggingFace-стиль ("huggingface_linear", "huggingface_cosine" "huggingface_cosine_with_restarts" и т.д.)
+scheduler_type = "huggingface_cosine_with_restarts" # тип шедулера: "none", "plateau", "cosine", "onecycle" ил  и HuggingFace-стиль ("huggingface_linear", "huggingface_cosine" "huggingface_cosine_with_restarts" и т.д.)
 warmup_ratio = 0.1         # отношение количества warmup-итераций к общему числу шагов (0.1 = 10%)
 
 [embeddings]
@@ -112,8 +114,14 @@ audio_embedding_dim = 256  # размерность аудио-эмбеддин�
 text_embedding_dim = 1024   # размерность текст-эмбеддинга
 emb_normalize = false  # нормализовать ли вектор L2-нормой
 max_tokens = 95         # ограничение на длину текста (токенов) при токенизации
-max_audio_frames = 64000 # ограничение на длину аудио (семплов) до усечения
 device = "cuda"          # "cuda" или "cpu", куда грузить модель
 
 # audio_pooling = "mean"        # "mean", "cls", "max", "min", "last", "attention"
 # text_pooling = "cls"          # "mean", "cls", "max", "min", "last", "sum", "attention"
+
+[textgen]
+# model_name = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"  # deepseek-ai/deepseek-llm-1.3b-base или любая другая модель
+model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"  # deepseek-ai/deepseek-llm-1.3b-base или любая другая модель
+max_new_tokens = 50
+temperature = 1.0
+top_p = 0.95

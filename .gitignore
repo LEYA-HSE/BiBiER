@@ -182,3 +182,5 @@ results_*/
 modules/
 hub/
 features/
+saved_merges/
+synthetic_data/

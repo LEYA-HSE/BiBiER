@@ -139,7 +139,9 @@ class AudioEmbeddingExtractor:
         self.model_name = config.audio_model_name
         self.pooling = config.audio_pooling       # может быть None
         self.normalize_output = config.emb_normalize
-        self.max_audio_frames = getattr(config, "max_audio_frames", 0)
+        # self.max_audio_frames = getattr(config, "max_audio_frames", 0)
+        self.max_audio_frames = config.sample_rate * config.wav_length
+
 
         # Попробуем загрузить feature_extractor (не у всех моделей доступен)
         try:
