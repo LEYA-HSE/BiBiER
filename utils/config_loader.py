@@ -128,11 +128,11 @@ class ConfigLoader:
         # ---------------------------
         # Синтетика
         # ---------------------------
-        textgen_cfg = self.config.get("textgen", {})
-        self.model_name = textgen_cfg.get("model_name", "deepseek-ai/DeepSeek-R1-Distill-Llama-8B")
-        self.max_new_tokens = textgen_cfg.get("max_new_tokens", 50)
-        self.temperature = textgen_cfg.get("temperature", 1.0)
-        self.top_p = textgen_cfg.get("top_p", 0.95)
+        # textgen_cfg = self.config.get("textgen", {})
+        # self.model_name = textgen_cfg.get("model_name", "deepseek-ai/DeepSeek-R1-Distill-Llama-8B")
+        # self.max_new_tokens = textgen_cfg.get("max_new_tokens", 50)
+        # self.temperature = textgen_cfg.get("temperature", 1.0)
+        # self.top_p = textgen_cfg.get("top_p", 0.95)
 
         if __name__ == "__main__":
             self.log_config()

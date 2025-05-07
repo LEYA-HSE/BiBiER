@@ -27,7 +27,7 @@ emotion_columns = ["anger", "disgust", "fear", "happy", "neutral", "sad", "surpr
 [dataloader]
 num_workers = 0
 shuffle = true
-prepare_only = true
+prepare_only = false
 
 # ---------------------------
 # Аудио
@@ -74,18 +74,18 @@ search_type = "none" # стратегия поиска: "greedy", "exhaustive" �
 # Параметры модели
 # ---------------------------
 [train.model]
-model_name = "BiMambaWithProb"    # название модели (BiGraphFormer, BiFormer, BiGatedGraphFormer, BiGatedFormer, BiMamba, PredictionsFusion, BiFormerWithProb, BiMambaWithProb)
+model_name = "BiFormer"    # название модели (BiGraphFormer, BiFormer, BiGatedGraphFormer, BiGatedFormer, BiMamba, PredictionsFusion, BiFormerWithProb, BiMambaWithProb)
 hidden_dim = 256            # размер скрытого состояния
-hidden_dim_gated = 128      # скрытое состояние для gated механизмов
-num_transformer_heads = 2   # количество attention голов в трансформере
+hidden_dim_gated = 256      # скрытое состояние для gated механизмов
+num_transformer_heads = 16   # количество attention голов в трансформере
 num_graph_heads = 2         # количество голов в граф-механизме
-tr_layer_number = 1         # количество слоев в трансформере
+tr_layer_number = 5         # количество слоев в трансформере
 mamba_d_state = 16          # размер состояния в Mamba
 mamba_ker_size = 6          # размер кернела в Mamba
 mamba_layer_number = 5      # количество слоев Mamba
 positional_encoding = false # использовать ли позиционное кодирование
 dropout = 0.15              # dropout между слоями
-out_features = 128          # размер финальных признаков перед классификацией
+out_features = 256          # размер финальных признаков перед классификацией
 mode = 'mean'               # способ агрегации признаков (например, "mean", "max", и т.д.)
 
 # ---------------------------
@@ -121,7 +121,7 @@ device = "cuda"          # "cuda" или "cpu", куда грузить моде
 
 [textgen]
 # model_name = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"  # deepseek-ai/deepseek-llm-1.3b-base или любая другая модель
-model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"  # deepseek-ai/deepseek-llm-1.3b-base или любая другая модель
+# model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"  # deepseek-ai/deepseek-llm-1.3b-base или любая другая модель
 max_new_tokens = 50
 temperature = 1.0
 top_p = 0.95

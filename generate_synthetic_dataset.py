@@ -1,120 +1,82 @@
-# generate_synthetic_dataset.py
+# generate_from_emotion_csv.py
 
 import os
-import csv
 import logging
+import time
 import random
-from datetime import datetime
-
 import pandas as pd
-from utils.config_loader import ConfigLoader
-from synthetic_utils.text_generation import TextGenerator
-from synthetic_utils.dia_tts_wrapper import DiaTTSWrapper  # Заменили на новый TTS
+from glob import glob
+from synthetic_utils.dia_tts_wrapper import DiaTTSWrapper
 
-# === Сопоставление эмоций и паралингвистических эффектов ===
-PARALINGUISTIC_MARKERS = {
-    "neutral": "",
-    "happy": "laughs",
-    "sad": "sighs",
-    "anger": "shouts",
-    "surprise": "gasps",
-    "disgust": "groans",
-    "fear": "whispers"
-}
 
-# model_name = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"  # deepseek-ai/deepseek-llm-1.3b-base или любая другая модель
-model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"  # deepseek-ai/deepseek-llm-1.3b-base или любая другая модель
-
-def collect_partial_texts(csv_path, text_column, emotion_columns):
-    texts_by_emotion = {e: [] for e in emotion_columns}
-    df = pd.read_csv(csv_path)
-
-    for _, row in df.iterrows():
-        text = row.get(text_column, "")
-        if not isinstance(text, str) or not text.strip():
-            continue
-
-        try:
-            scores = [float(row[e]) for e in emotion_columns]
-            dominant_idx = int(pd.Series(scores).idxmax())
-            emotion = emotion_columns[dominant_idx]
-            texts_by_emotion[emotion].append(text.strip())
-        except Exception as e:
-            logging.warning(f"⚠️ Ошибка обработки строки: {e}")
-            continue
-
-    return texts_by_emotion
-
-def generate_synthetic_dataset_for_single_corpus(
-    csv_path,
-    emotion_columns,
-    text_column,
-    samples_per_emotion=50,
-    output_dir="synthetic_meld_data",
-    model_config=None
+def generate_from_emotion_csv(
+    csv_path: str,
+    emotion: str,
+    output_dir: str,
+    device: str = "cuda",
+    max_samples: int = None
 ):
-    os.makedirs(output_dir, exist_ok=True)
-    wav_dir = os.path.join(output_dir, "wavs")
+    out_dir = os.path.join(output_dir, emotion)
+    wav_dir = os.path.join(out_dir, "wavs")
     os.makedirs(wav_dir, exist_ok=True)
 
-    logging.basicConfig(level=logging.INFO)
-    logging.info(f"📦 Загрузка TextGenerator и DiaTTSWrapper")
+    logging.info(f"🎙️ Эмоция: '{emotion}' | CSV: {csv_path}")
+    logging.info(f"📥 Сохранение в: {wav_dir}")
 
-    text_gen = TextGenerator(
-        model_name=model_config.model_name,
-        device=model_config.whisper_device,
-        max_new_tokens=model_config.max_new_tokens,
-        temperature=model_config.temperature,
-        top_p=model_config.top_p,
-        seed=model_config.random_seed
-    )
+    tts = DiaTTSWrapper(device=device)
+    df = pd.read_csv(csv_path)
 
-    tts = DiaTTSWrapper(device=model_config.whisper_device)
+    if max_samples is not None:
+        df = df.sample(n=max_samples)
 
-    texts_by_emotion = collect_partial_texts(csv_path, text_column, emotion_columns)
+    total_start = time.time()
 
-    csv_out = os.path.join(output_dir, "metadata.csv")
-    with open(csv_out, "w", newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerow(["emotion", "partial_text", "full_text", "audio_file"])
+    for idx, row in df.iterrows():
+        text = row["text"]
+        video_name = row.get("video_name", f"{emotion}_{idx}")
+        filename_prefix = video_name
 
-        for emotion in emotion_columns:
-            logging.info(f"\n🎭 Эмоция: {emotion}")
-            partial_pool = texts_by_emotion.get(emotion, [])
-            marker = PARALINGUISTIC_MARKERS.get(emotion, "")
+        start = time.time()
+        tts.generate_and_save_audio(
+            text=text,
+            out_dir=wav_dir,
+            filename_prefix=filename_prefix
+        )
+        elapsed = time.time() - start
 
-            for i in range(samples_per_emotion):
-                partial = random.choice(partial_pool) if partial_pool else ""
-                full_text = text_gen.generate_text(emotion, partial)
+        logging.info(f"[{emotion}] ✔ {filename_prefix}.wav")
+        logging.info(f"       🗣️ Текст: {text[:100]}{'...' if len(text) > 100 else ''}")
+        logging.info(f"       🎧 Маркер: (встроен в текст) | ⏱️ {elapsed:.2f} сек")
 
-                filename_prefix = f"{emotion}_{i}_{datetime.now().strftime('%H%M%S')}"
-                tts.generate_and_save_audio(
-                    text=full_text,
-                    paralinguistic=marker,
-                    out_dir=wav_dir,
-                    filename_prefix=filename_prefix
-                )
-
-                audio_file = f"{filename_prefix}.wav"
-                writer.writerow([emotion, partial, full_text, audio_file])
-                logging.info(f"[✔] Сохранено: {audio_file}")
-
-    logging.info(f"\n✅ Синтетический датасет сохранён в: {output_dir}")
+    total_elapsed = time.time() - total_start
+    logging.info(f"✅ Эмоция '{emotion}' завершена | файлов: {len(df)} | ⏱️ {total_elapsed:.1f} сек\n")
 
 
 if __name__ == "__main__":
-    config = ConfigLoader("config.toml")
+    logging.basicConfig(level=logging.INFO)
 
-    dataset_name = "meld"
-    dataset_cfg = config.datasets[dataset_name]
-    base_dir = dataset_cfg["base_dir"]
-    csv_path = dataset_cfg["csv_path"].format(base_dir=base_dir, split="train")
+    INPUT_DIR = "synthetic_data"
+    OUTPUT_DIR = "tts_synthetic_final"
+    DEVICE = "cuda"
 
-    generate_synthetic_dataset_for_single_corpus(
-        csv_path=csv_path,
-        emotion_columns=config.emotion_columns,
-        text_column=config.text_column,
-        samples_per_emotion=1,
-        output_dir="synthetic_meld_data",
-        model_config=config
-    )
+    csv_files = glob(os.path.join(INPUT_DIR, "meld_synthetic_*.csv"))
+
+    for csv_path in csv_files:
+        filename = os.path.basename(csv_path)
+        # Извлекаем эмоцию по шаблону: meld_synthetic_<emotion>_*.csv
+        try:
+            emotion = filename.split("_")[2]
+        except IndexError:
+            logging.warning(f"⚠️ Пропускаем файл: {filename}")
+            continue
+
+        # Генерируем 3–5 случайных аудио для каждой эмоции
+        # n = random.randint(2, 5)
+        n = 1
+        generate_from_emotion_csv(
+            csv_path=csv_path,
+            emotion=emotion,
+            output_dir=OUTPUT_DIR,
+            device=DEVICE,
+            max_samples=n
+        )
