@@ -8,37 +8,49 @@ License: MIT License
 
 import warnings
 
-warnings.filterwarnings(
-    "ignore", message=".*1Torch was not compiled with flash attention.*"
-)
-
 import os
 import re
 import csv
 import random
 import torch
+import torch.nn as nn
 import polars as pl
 import numpy as np
 from tabulate import tabulate
 from pathlib import Path
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from dataclasses import dataclass
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, Tuple
+
+warnings.filterwarnings(
+    "ignore", message=".*1Torch was not compiled with flash attention.*"
+)
+
+
+class SupportedLLMs:
+    QWEN3_4B = "Qwen3-4B"
+    PHI4_MINI = "Phi-4-mini-instruct"
+
+    MODELS_REQUIRING_TRUST_REMOTE_CODE = {PHI4_MINI}
+    MODELS_REQUIRING_PIPE = {PHI4_MINI}
 
 
 @dataclass
 class Config:
     base_path: Path = Path("D:/Dr.Ryumin/GitHub/EMNLP25")
-    model_path: Path = base_path / "Qwen3-4B"
+    model_name: str = SupportedLLMs.QWEN3_4B
+    model_path: Path = base_path / model_name
     input_csv: Path = base_path / "meld_train_labels.csv"
-    output_csv: Path = base_path / "Qwen3-4B_emotions_meld.csv"
-    log_file: Path = base_path / "Qwen3-4B_emotions_meld.txt"
+    output_csv: Path = base_path / f"{model_name}_emotions_meld.csv"
+    log_file: Path = base_path / f"{model_name}_emotions_meld.txt"
+    num_emotions: int = 7
     seed: int = 42
     batch_size: int = 1
-    num_rows: int | None = None
+    num_rows: int | None = 10
     epsilon: float = 1e-5
     max_tokens: int = 1024
+    use_torch_compile: bool = True
     prompt_template: str = """
 You are an expert emotion analysis system. Analyze the following text and predict a probability distribution for the emotions: neutral, happy, sad, anger, surprise, disgust, fear.
 
@@ -70,9 +82,30 @@ def set_seed(seed: int):
     os.environ["PYTHONHASHSEED"] = str(seed)
 
 
+def validate_model_name(model_name: str):
+    valid_models = [
+        v for k, v in SupportedLLMs.__dict__.items() if not k.startswith("__")
+    ]
+    if model_name not in valid_models:
+        raise ValueError(
+            f"Unsupported model: {model_name}. Available options: {valid_models}"
+        )
+
+
+def maybe_compile_model(model: nn.Module) -> nn.Module:
+    if not Config.use_torch_compile:
+        return model
+    try:
+        model = torch.compile(model)
+        print("Model compiled with torch.compile().")
+    except Exception as e:
+        print(f"torch.compile() failed: {e}")
+    return model
+
+
 def postprocess_probs(
-    probs: List[float], line_number: int, epsilon: float = 1e-5
-) -> Tuple[List[float], bool]:
+    probs: list[float], line_number: int, epsilon: float = 1e-5
+) -> Tuple[list[float], bool]:
     probs = np.array(probs, dtype=np.float64)
     probs /= probs.sum()
     np.random.seed(line_number)
@@ -97,16 +130,37 @@ def postprocess_probs(
 
 def load_model_and_tokenizer(
     model_path: Path,
-) -> Tuple[AutoModelForCausalLM, AutoTokenizer]:
+) -> Tuple[AutoModelForCausalLM, AutoTokenizer, Optional[pipeline]]:
+    trust_remote_code = (
+        Config.model_name in SupportedLLMs.MODELS_REQUIRING_TRUST_REMOTE_CODE
+    )
+
     model = AutoModelForCausalLM.from_pretrained(
-        model_path, torch_dtype="auto", device_map="auto"
+        model_path,
+        torch_dtype="auto",
+        device_map="auto",
+        trust_remote_code=trust_remote_code,
     )
     tokenizer = AutoTokenizer.from_pretrained(model_path)
-    return model, tokenizer
+
+    if Config.model_name in SupportedLLMs.MODELS_REQUIRING_PIPE:
+        pipe = pipeline(
+            "text-generation", model=model, tokenizer=tokenizer, device_map="auto"
+        )
+        return model, tokenizer, pipe
+    else:
+        return model, tokenizer, None
 
 
 def get_emotion_prediction_batch(
-    texts, labels, idx_start, model, tokenizer, prompt_template, max_tokens=1024
+    texts,
+    labels,
+    idx_start,
+    model,
+    tokenizer,
+    prompt_template,
+    max_tokens=1024,
+    pipe=None,
 ):
     prompts = [
         tokenizer.apply_chat_template(
@@ -123,25 +177,29 @@ def get_emotion_prediction_batch(
         for text, label in zip(texts, labels)
     ]
 
-    inputs = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True).to(
-        model.device
-    )
-    generated = model.generate(
-        input_ids=inputs.input_ids,
-        attention_mask=inputs.attention_mask,
-        max_new_tokens=max_tokens,
-    )
-    decoded = tokenizer.batch_decode(generated, skip_special_tokens=True)
+    if pipe:
+        responses = pipe(prompts, max_new_tokens=max_tokens, return_full_text=False)
+        decoded = [resp[0]["generated_text"] for resp in responses]
+    else:
+        inputs = tokenizer(
+            prompts, return_tensors="pt", padding=True, truncation=True
+        ).to(model.device)
+        generated = model.generate(
+            input_ids=inputs.input_ids,
+            attention_mask=inputs.attention_mask,
+            max_new_tokens=max_tokens,
+        )
+        decoded = tokenizer.batch_decode(generated, skip_special_tokens=True)
 
     all_probs, all_responses, error_count = [], [], 0
     for j, response in enumerate(decoded):
         response_clean = (
-            response.split("assistant")[-1].strip()
-            if "assistant" in response
-            else response.strip()
+            (response.split("assistant")[-1] if "assistant" in response else response)
+            .strip()
+            .splitlines()[-1]
         )
         numbers = re.findall(r"\d\.\d+", response_clean)
-        if len(numbers) == 7:
+        if len(numbers) == Config.num_emotions:
             probs, error = postprocess_probs([float(n) for n in numbers], idx_start + j)
             error_count += error
         else:
@@ -204,14 +262,18 @@ def evaluate_model_performance(
 
 def main():
     set_seed(Config.seed)
-    model, tokenizer = load_model_and_tokenizer(Config.model_path)
-    model = torch.compile(model)
+
+    validate_model_name(Config.model_name)
+
+    model, tokenizer, pipe = load_model_and_tokenizer(Config.model_path)
+    model = maybe_compile_model(model)
+
     df = pl.read_csv(Config.input_csv)
     if Config.num_rows:
         df = df.head(Config.num_rows)
 
     for file in [Config.output_csv, Config.log_file]:
-        if os.path.exists(file):
+        if file.exists():
             os.remove(file)
 
     header = [
@@ -237,8 +299,11 @@ def main():
         csv.writer(f).writerow(header)
 
     log_file = open(Config.log_file, "w", encoding="utf-8", buffering=1)
+
     batch_texts, batch_labels, batch_meta = [], [], []
+
     pbar = tqdm(enumerate(df.iter_rows(named=True)), total=len(df))
+
     error_count = 0
     emotions = ["neutral", "happy", "sad", "anger", "surprise", "disgust", "fear"]
 
@@ -259,6 +324,8 @@ def main():
                 model,
                 tokenizer,
                 Config.prompt_template,
+                Config.max_tokens,
+                pipe,
             )
             error_count += errors
 
