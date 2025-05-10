@@ -1,5 +1,21 @@
 # Emotion Probability Prediction from Text using LLMs
 
+## Summary of UAR Results
+
+### RESD Corpus
+
+| Model                | UAR    |
+|:--------------------|:--------|
+| Qwen3-4B            | 0.95079 |
+| Phi-4-mini-instruct | 0.88597 |
+
+### MELD Corpus
+
+| Model               | UAR     |
+|:--------------------|:--------|
+| Qwen3-4B            | 0.95741 |
+| Phi-4-mini-instruct | 0.91990 |
+
 ## Evaluation Results for [Qwen3-4B_emotions_resd](https://github.com/LEYA-HSE/ESWA_2025/blob/LLMs/corpora/Qwen3-4B_emotions_resd.csv)
 
 ### Confusion Matrix `Qwen3-4B_emotions_resd`
@@ -86,3 +102,32 @@
 | Surprise | 0.81646 |
 | Disgust  | 0.90541 |
 | Fear     | 0.92135 |
+
+## Evaluation Results for [Phi-4-mini-instruct_emotions_meld](https://github.com/LEYA-HSE/ESWA_2025/blob/LLMs/corpora/Phi-4-mini-instruct_emotions_meld.csv)
+
+### Confusion Matrix `Phi-4-mini-instruct_emotions_meld`
+
+| True / Pred | Neutral | Happy | Sad | Anger | Surprise | Disgust | Fear |
+|:------------|:--------|:------|:----|:------|:---------|:--------|:-----|
+| Neutral     | 4707    | 0     | 0   | 1     | 0        | 0       | 2    |
+| Happy       | 39      | 1410  | 10  | 36    | 24       | 0       | 224  |
+| Sad         | 3       | 7     | 646 | 9     | 12       | 1       | 5    |
+| Anger       | 21      | 35    | 2   | 1013  | 17       | 1       | 20   |
+| Surprise    | 37      | 18    | 5   | 19    | 1126     | 0       | 0    |
+| Disgust     | 7       | 2     | 2   | 5     | 6        | 235     | 14   |
+| Fear        | 1       | 2     | 0   | 2     | 3        | 0       | 260  |
+
+**Total mismatches:** 592 out of 9989
+**Unweighted Average Recall (UAR):** 0.91990
+
+### Per-class Recall `Phi-4-mini-instruct_emotions_meld`
+
+| Emotion  | Recall  |
+|:---------|:--------|
+| Neutral  | 0.99936 |
+| Happy    | 0.80895 |
+| Sad      | 0.94583 |
+| Anger    | 0.91344 |
+| Surprise | 0.93444 |
+| Disgust  | 0.86716 |
+| Fear     | 0.97015 |
