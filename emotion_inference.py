@@ -38,13 +38,18 @@ class SupportedLLMs:
 
 @dataclass
 class Config:
+    batch_size: int = 16
     base_path: Path = Path("D:/Dr.Ryumin/GitHub/EMNLP25")
     model_name: str = SupportedLLMs.PHI4_MINI
     model_path: Path = base_path / model_name
     dataset_name: str = "resd"
     input_csv: Path = base_path / f"{dataset_name}_train_labels.csv"
-    output_csv: Path = base_path / f"{model_name}_emotions_{dataset_name}.csv"
-    log_file: Path = base_path / f"{model_name}_emotions_{dataset_name}.txt"
+    output_csv: Path = (
+        base_path / f"{model_name}_emotions_{dataset_name}_{batch_size}.csv"
+    )
+    log_file: Path = (
+        base_path / f"{model_name}_emotions_{dataset_name}_{batch_size}.txt"
+    )
     emotions: list[str] = field(
         default_factory=lambda: [
             "neutral",
@@ -58,10 +63,9 @@ class Config:
     )
     num_emotions: int = field(init=False)
     seed: int = 42
-    batch_size: int = 1
     num_rows: int | None = None
     epsilon: float = 1e-5
-    max_tokens: int = 1024
+    max_tokens: int = 1024 * batch_size
     use_torch_compile: bool = True
     only_evaluate: bool = False
     prompt_template: str = """
