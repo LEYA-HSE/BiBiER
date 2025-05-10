@@ -29,6 +29,35 @@
 | Disgust  | 0.85811 |
 | Fear     | 0.85393 |
 
+## Evaluation Results for [Qwen3-4B_emotions_meld](https://github.com/LEYA-HSE/ESWA_2025/blob/LLMs/corpora/Qwen3-4B_emotions_meld.csv)
+
+### Confusion Matrix `Qwen3-4B_emotions_meld`
+
+| True / Pred | Neutral | Happy | Sad | Anger | Surprise | Disgust | Fear |
+|:------------|:--------|:------|:----|:------|:---------|:--------|:-----|
+| Neutral     | 4710    | 0     | 0   | 0     | 0        | 0       | 0    |
+| Happy       | 0       | 1743  | 0   | 0     | 0        | 0       | 0    |
+| Sad         | 0       | 1     | 682 | 0     | 0        | 0       | 0    |
+| Anger       | 0       | 12    | 10  | 1087  | 0        | 0       | 0    |
+| Surprise    | 4       | 25    | 4   | 1     | 1171     | 0       | 0    |
+| Disgust     | 2       | 3     | 8   | 16    | 4        | 238     | 0    |
+| Fear        | 8       | 9     | 14  | 2     | 1        | 0       | 234  |
+
+**Total mismatches:** 124 out of 9989
+**Unweighted Average Recall (UAR):** 0.95741
+
+### Per-class Recall `Qwen3-4B_emotions_meld`
+
+| Emotion  | Recall  |
+|:---------|:--------|
+| Neutral  | 1.00000 |
+| Happy    | 1.00000 |
+| Sad      | 0.99854 |
+| Anger    | 0.98016 |
+| Surprise | 0.97178 |
+| Disgust  | 0.87823 |
+| Fear     | 0.87313 |
+
 ## Evaluation Results for [Phi-4-mini-instruct_emotions_resd](https://github.com/LEYA-HSE/ESWA_2025/blob/LLMs/corpora/Phi-4-mini-instruct_emotions_resd.csv)
 
 ### Confusion Matrix `Phi-4-mini-instruct_emotions_resd`
