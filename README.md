@@ -1,8 +1,37 @@
 # Emotion Probability Prediction from Text using LLMs
 
+## Evaluation Results for [Qwen3-4B_emotions_resd](https://github.com/LEYA-HSE/ESWA_2025/blob/LLMs/corpora/Qwen3-4B_emotions_resd.csv)
+
+### Confusion Matrix `Qwen3-4B_emotions_resd`
+
+| True / Pred | Neutral | Happy | Sad | Anger | Surprise | Disgust | Fear |
+|:------------|:--------|:------|:----|:------|:---------|:--------|:-----|
+| Neutral     | 153     | 0     | 0   | 0     | 0        | 0       | 0    |
+| Happy       | 1       | 173   | 0   | 0     | 0        | 0       | 0    |
+| Sad         | 1       | 0     | 129 | 0     | 0        | 0       | 0    |
+| Anger       | 0       | 0     | 2   | 173   | 0        | 0       | 0    |
+| Surprise    | 1       | 2     | 2   | 0     | 153      | 0       | 0    |
+| Disgust     | 3       | 2     | 9   | 6     | 1        | 127     | 0    |
+| Fear        | 6       | 2     | 17  | 0     | 1        | 0       | 152  |
+
+**Total mismatches:** 56 out of 1116
+**Unweighted Average Recall (UAR):** 0.95079
+
+### Per-class Recall `Qwen3-4B_emotions_resd`
+
+| Emotion  | Recall  |
+|:---------|:--------|
+| Neutral  | 1.00000 |
+| Happy    | 0.99425 |
+| Sad      | 0.99231 |
+| Anger    | 0.98857 |
+| Surprise | 0.96835 |
+| Disgust  | 0.85811 |
+| Fear     | 0.85393 |
+
 ## Evaluation Results for [Phi-4-mini-instruct_emotions_resd](https://github.com/LEYA-HSE/ESWA_2025/blob/LLMs/corpora/Phi-4-mini-instruct_emotions_resd.csv)
 
-### Confusion Matrix
+### Confusion Matrix `Phi-4-mini-instruct_emotions_resd`
 
 | True / Pred | Neutral | Happy | Sad | Anger | Surprise | Disgust | Fear |
 |:------------|:--------|:------|:----|:------|:---------|:--------|:-----|
@@ -17,7 +46,7 @@
 **Total mismatches:** 129 out of 1116
 **Unweighted Average Recall (UAR):** 0.88597
 
-### Per-class Recall
+### Per-class Recall `Phi-4-mini-instruct_emotions_resd`
 
 | Emotion  | Recall  |
 |:---------|:--------|
