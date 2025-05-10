@@ -1,6 +1,6 @@
 # Emotion Probability Prediction from Text using LLMs
 
-## Evaluation Results for `Phi-4-mini-instruct_emotions_resd`
+## Evaluation Results for [Phi-4-mini-instruct_emotions_resd](https://github.com/LEYA-HSE/ESWA_2025/blob/LLMs/corpora/Phi-4-mini-instruct_emotions_resd.csv)
 
 ### Confusion Matrix
 
