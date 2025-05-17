@@ -315,6 +315,7 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
         text_pred, text_emb = self.text_feature_extractor.extract(text_final)
 
         return {
+            "audio_path": os.path.basename(audio_path),
             "audio": audion_emb[0],
             "label": label_vec,
             "text": text_emb[0],
@@ -704,6 +705,7 @@ class DatasetMultiModal(Dataset):
                     text_final = ""
 
         return {
+            "audio_path": os.path.basename(audio_path), # new
             "audio": waveform,
             "label": label_vec,
             "text": text_final

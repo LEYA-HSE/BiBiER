@@ -61,14 +61,16 @@ use_whisper_for_nontrain_if_no_text = true
 # ---------------------------
 [train.general]
 random_seed = 42         # фиксируем random seed для воспроизводимости (0 = каждый раз разный)
-subset_size = 100         # ограничение на количество примеров (0 = использовать весь датасет)
-merge_probability = 0.15    # процент склеивания коротких файлов
-batch_size = 8           # размер батча
-num_epochs = 2           # число эпох тренировки
+subset_size = 20         # ограничение на количество примеров (0 = использовать весь датасет)
+merge_probability = 0    # процент склеивания коротких файлов
+batch_size = 8         # размер батча
+num_epochs = 75           # число эпох тренировки
 max_patience = 10        # максимальное число эпох без улучшений (для Early Stopping)
 save_prepared_data = true # сохранять извлеченные признаки (эмбеддинги)
 save_feature_path = './features/' # путь для сохранения эмбеддингов
 search_type = "none" # стратегия поиска: "greedy", "exhaustive" или "none"
+path_to_df_ls = 'Phi-4-mini-instruct_emotions_union.csv'    # путь к датафрейму со смягченными метками
+smoothing_probability = 0.0 # процент использования смягченных меток
 
 # ---------------------------
 # Параметры модели
@@ -76,7 +78,7 @@ search_type = "none" # стратегия поиска: "greedy", "exhaustive" �
 [train.model]
 model_name = "BiFormer"    # название модели (BiGraphFormer, BiFormer, BiGatedGraphFormer, BiGatedFormer, BiMamba, PredictionsFusion, BiFormerWithProb, BiMambaWithProb)
 hidden_dim = 256            # размер скрытого состояния
-hidden_dim_gated = 256      # скрытое состояние для gated механизмов
+hidden_dim_gated = 128      # скрытое состояние для gated механизмов
 num_transformer_heads = 16   # количество attention голов в трансформере
 num_graph_heads = 2         # количество голов в граф-механизме
 tr_layer_number = 5         # количество слоев в трансформере
@@ -101,7 +103,7 @@ momentum = 0.9            # momentum (используется только в S
 # Параметры шедулера
 # ---------------------------
 [train.scheduler]
-scheduler_type = "huggingface_cosine_with_restarts" # тип шедулера: "none", "plateau", "cosine", "onecycle" ил  и HuggingFace-стиль ("huggingface_linear", "huggingface_cosine" "huggingface_cosine_with_restarts" и т.д.)
+scheduler_type = "plateau" # тип шедулера: "none", "plateau", "cosine", "onecycle" ил  и HuggingFace-стиль ("huggingface_linear", "huggingface_cosine" "huggingface_cosine_with_restarts" и т.д.)
 warmup_ratio = 0.1         # отношение количества warmup-итераций к общему числу шагов (0.1 = 10%)
 
 [embeddings]

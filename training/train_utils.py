@@ -6,8 +6,10 @@ import logging
 import random
 import numpy as np
 import csv
+import pandas as pd
 from tqdm import tqdm
 from typing import Type
+import os
 
 from torch.utils.data import DataLoader, ConcatDataset, WeightedRandomSampler
 from torch.nn.utils.rnn import pad_sequence
@@ -24,9 +26,38 @@ from data_loading.dataset_multimodal import DatasetMultiModalWithPretrainedExtra
 from sklearn.utils.class_weight import compute_class_weight
 from lion_pytorch import Lion
 
+
+def get_smoothed_labels(audio_paths, original_labels, smooth_labels_df, smooth_mask, emotion_columns,  device):
+    """
+    audio_paths: список путей к аудиофайлам
+    smooth_mask: тензор boolean с индексами для сглаживания
+    Возвращает тензор сглаженных меток только для отмеченных примеров
+    """
+
+    # Получаем индексы для сглаживания
+    smooth_indices = torch.where(smooth_mask)[0]
+
+    # Создаем тензор для результатов (такого же размера как оригинальные метки)
+    smoothed_labels = torch.zeros_like(original_labels)
+
+    # print(smooth_labels_df, audio_paths)
+
+    for idx in smooth_indices:
+        audio_path = audio_paths[idx]
+        # Получаем сглаженную метку из вашего DataFrame или другого источника
+        smoothed_label = smooth_labels_df.loc[
+            smooth_labels_df['video_name'] == audio_path[:-4],
+            emotion_columns
+        ].values[0]
+
+        smoothed_labels[idx] = torch.tensor(smoothed_label, device=device)
+
+    return smoothed_labels
+
 def custom_collate_fn(batch):
     """Собирает список образцов в единый батч, отбрасывая None (невалидные)."""
     batch = [x for x in batch if x is not None]
+    # print(batch[0].keys())
     if not batch:
         return None
 
@@ -47,6 +78,7 @@ def custom_collate_fn(batch):
     text_pred = torch.stack(text_pred)
 
     return {
+        "audio_paths": [b["audio_path"] for b in batch], # new
         "audio": audio_tensor,
         "label": label_tensor,
         "text": text_tensor,
@@ -231,6 +263,9 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
     csv_writer = None
     csv_file = None
 
+    if config.path_to_df_ls:
+        df_ls = pd.read_csv(config.path_to_df_ls)
+
     if metrics_csv_path:
         csv_file = open(metrics_csv_path, mode="w", newline="", encoding="utf-8")
         csv_writer = csv.writer(csv_file)
@@ -241,6 +276,10 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
     if config.random_seed > 0:
         random.seed(config.random_seed)
         torch.manual_seed(config.random_seed)
+        torch.cuda.manual_seed_all(config.random_seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        os.environ['PYTHONHASHSEED'] = str(config.random_seed)
         logging.info(f"== Фиксируем random seed: {config.random_seed}")
     else:
         logging.info("== Random seed не фиксирован (0).")
@@ -382,8 +421,30 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
             if batch is None:
                 continue
 
+            audio_paths =  batch["audio_paths"]  # new
             audio = batch["audio"].to(device)
-            labels = batch["label"].to(device)
+
+            # Обработка меток с частичным сглаживанием
+            if config.smoothing_probability == 0:
+                labels = batch["label"].to(device)
+            else:
+                # Получаем оригинальные горячие метки
+                original_labels = batch["label"].to(device)
+
+                # Создаем маску для сглаживания (выбираем случайные примеры)
+                batch_size = original_labels.size(0)
+                smooth_mask = torch.rand(batch_size, device=device) < config.smoothing_probability
+
+                # Получаем сглаженные метки для выбранных примеров
+                smoothed_labels = get_smoothed_labels(audio_paths, original_labels, df_ls, smooth_mask, config.emotion_columns,  device)
+
+                # Комбинируем метки
+                labels = torch.where(
+                    smooth_mask.unsqueeze(1),  # Добавляем размерность для broadcast
+                    smoothed_labels.to(device),
+                    original_labels
+        )
+            # print(labels)
             texts = batch["text"]
             audio_pred = batch["audio_pred"].to(device)
             text_pred = batch["text_pred"].to(device)

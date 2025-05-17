@@ -74,6 +74,8 @@ class ConfigLoader:
         self.save_prepared_data = train_general.get("save_prepared_data", True)
         self.save_feature_path = train_general.get("save_feature_path", "./features/")
         self.search_type = train_general.get("search_type", "none")
+        self.smoothing_probability = train_general.get("smoothing_probability", 0)
+        self.path_to_df_ls = train_general.get("path_to_df_ls", None)
 
         # ---------------------------
         # Тренировка: параметры модели
@@ -176,6 +178,7 @@ class ConfigLoader:
         logging.info(f"LR: {self.lr}")
         logging.info(f"Num Epochs: {self.num_epochs}")
         logging.info(f"Merge Probability={self.merge_probability}")
+        logging.info(f"Smoothing Probability={self.smoothing_probability}")
         logging.info(f"Max Patience={self.max_patience}")
         logging.info(f"Save Prepared Data={self.save_prepared_data}")
         logging.info(f"Path to Save Features={self.save_feature_path}")

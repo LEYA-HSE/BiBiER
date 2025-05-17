@@ -32,7 +32,7 @@ def main():
 
     # Настраиваем logging
     log_file = os.path.join(results_dir, "session_log.txt")
-    setup_logger(logging.DEBUG, log_file=log_file)
+    setup_logger(logging.INFO, log_file=log_file)
 
     #  Грузим конфиг
     base_config.show_config()
