@@ -927,6 +927,348 @@ class BiFormerWithProb(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
+class BiGraphFormerWithProb(nn.Module):
+    def __init__(self, audio_dim=1024, text_dim=1024, seg_len=44, hidden_dim=512, hidden_dim_gated=128,
+                num_transformer_heads=2, num_graph_heads = 2, positional_encoding=True, dropout=0.1, mode='mean',
+                device="cuda", tr_layer_number=1, out_features=128, num_classes=7):
+        super(BiGraphFormerWithProb, self).__init__()
+
+        self.mode = mode
+        self.hidden_dim = hidden_dim
+        self.seg_len = seg_len
+        self.tr_layer_number = tr_layer_number
+
+        # Проекционные слои с нормализацией
+        self.audio_proj = nn.Sequential(
+            nn.Linear(audio_dim, hidden_dim) if audio_dim != hidden_dim else nn.Identity(),
+            nn.LayerNorm(hidden_dim),
+            nn.Dropout(dropout)
+        )
+
+        self.text_proj = nn.Sequential(
+            nn.Linear(text_dim, hidden_dim) if text_dim != hidden_dim else nn.Identity(),
+            nn.LayerNorm(hidden_dim),
+            nn.Dropout(dropout)
+        )
+
+        # Трансформерные слои (сохраняем вашу реализацию)
+        self.audio_to_text_attn = nn.ModuleList([
+            TransformerEncoderLayer(
+                input_dim=hidden_dim,
+                num_heads=num_transformer_heads,
+                dropout=dropout,
+                positional_encoding=positional_encoding
+            ) for _ in range(tr_layer_number)
+        ])
+
+        self.text_to_audio_attn = nn.ModuleList([
+            TransformerEncoderLayer(
+                input_dim=hidden_dim,
+                num_heads=num_transformer_heads,
+                dropout=dropout,
+                positional_encoding=positional_encoding
+            ) for _ in range(tr_layer_number)
+        ])
+
+        self.graph_fusion_feat = GraphFusionLayer(self.seg_len, heads=num_graph_heads)
+        self.graph_fusion_temp = GraphFusionLayer(hidden_dim, heads=num_graph_heads)
+
+        # Автоматический расчёт размерности для классификатора
+        self._calculate_classifier_input_dim()
+
+        # Классификатор
+        self.classifier = nn.Sequential(
+            nn.Linear(self.classifier_input_dim, out_features),
+            nn.LayerNorm(out_features),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(out_features, num_classes)
+        )
+
+        # Финальная проекция графов
+        self.fc_feat = nn.Sequential(
+            nn.Linear(self.seg_len, self.seg_len),
+            nn.LayerNorm(self.seg_len),
+            nn.Dropout(dropout)
+        )
+
+        self.fc_temp = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.Dropout(dropout)
+        )
+
+        self.pred_fusion = PredictionsFusion(num_matrices=3, num_classes=num_classes)
+
+        self._init_weights()
+
+    def _calculate_classifier_input_dim(self):
+        """Вычисляет размер входных признаков для классификатора"""
+        # Тестовый проход через пулинг с dummy-данными
+        dummy_audio = torch.randn(1, self.seg_len, self.hidden_dim)
+        dummy_text = torch.randn(1, self.seg_len, self.hidden_dim)
+
+        audio_pool_temp, audio_pool_feat = self._pool_features(dummy_audio)
+        # text_pool_temp, _ = self._pool_features(dummy_text)
+
+        combined = torch.cat([audio_pool_temp, audio_pool_feat], dim=1)
+        self.classifier_input_dim = combined.size(1)
+
+    def _pool_features(self, x):
+        # Статистики по временной оси (seq_len)
+        mean_temp = x.mean(dim=1)  # [batch, hidden_dim]
+
+        # Статистики по feature оси  (hidden_dim)
+        mean_feat = x.mean(dim=-1)  # [batch, seq_len]
+
+        return mean_temp,  mean_feat
+
+    def forward(self, audio_features, text_features, audio_pred, text_pred):
+        # Проекция признаков
+        audio = self.audio_proj(audio_features.float())
+        text = self.text_proj(text_features.float())
+
+        # Адаптивный пулинг
+        min_len = min(audio.size(1), text.size(1))
+        audio = self.adaptive_temporal_pool(audio, min_len)
+        text = self.adaptive_temporal_pool(text, min_len)
+
+        # Кросс-модальное взаимодействие
+        for i in range(self.tr_layer_number):
+            attn_audio = self.audio_to_text_attn[i](text, audio, audio)
+            attn_text = self.text_to_audio_attn[i](audio, text, text)
+
+            audio = audio + attn_audio
+            text = text + attn_text
+
+        # Агрегация признаков
+        audio_pool_temp, audio_pool_feat = self._pool_features(audio)
+        text_pool_temp, text_pool_feat = self._pool_features(text)
+
+        # print(audio_pool_temp.shape, audio_pool_feat.shape, text_pool_temp.shape, text_pool_feat.shape)
+
+        graph_feat = self.graph_fusion_feat(audio_pool_feat, text_pool_feat)
+        graph_temp = self.graph_fusion_temp(audio_pool_temp, text_pool_temp)
+
+        # print(graph_feat.shape, graph_temp.shape)
+        # print(torch.mean(graph_feat, dim=1).shape, torch.mean(graph_temp, dim=1).shape)
+
+        # graph_feat = self.fc_feat(graph_feat)
+        # graph_temp = self.fc_temp(graph_temp)
+
+        # Классификация
+        features = torch.cat([graph_feat, graph_temp], dim=1)
+
+        # print(graph_feat.shape, graph_temp.shape, features.shape)
+        out = self.classifier(features)
+
+        w_out = self.pred_fusion([audio_pred, text_pred, out])
+        return w_out
+
+    def adaptive_temporal_pool(self, x, target_len):
+        """Адаптивное изменение временной длины"""
+        if x.size(1) == target_len:
+            return x
+
+        return F.interpolate(
+            x.permute(0, 2, 1),
+            size=target_len,
+            mode='linear',
+            align_corners=False
+        ).permute(0, 2, 1)
+
+    def _init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.LayerNorm):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+
+class BiGatedGraphFormerWithProb(nn.Module):
+    def __init__(self, audio_dim=1024, text_dim=1024, seg_len=44, hidden_dim=512, hidden_dim_gated=128,
+                num_transformer_heads=2, num_graph_heads = 2, positional_encoding=True, dropout=0.1, mode='mean',
+                device="cuda", tr_layer_number=1, out_features=128, num_classes=7):
+        super(BiGatedGraphFormerWithProb, self).__init__()
+
+        self.mode = mode
+        self.hidden_dim = hidden_dim
+        self.seg_len = seg_len
+        self.tr_layer_number = tr_layer_number
+
+        # Проекционные слои с нормализацией
+        self.audio_proj = nn.Sequential(
+            nn.Linear(audio_dim, hidden_dim) if audio_dim != hidden_dim else nn.Identity(),
+            nn.LayerNorm(hidden_dim),
+            nn.Dropout(dropout)
+        )
+
+        self.text_proj = nn.Sequential(
+            nn.Linear(text_dim, hidden_dim) if text_dim != hidden_dim else nn.Identity(),
+            nn.LayerNorm(hidden_dim),
+            nn.Dropout(dropout)
+        )
+
+        # Трансформерные слои (сохраняем вашу реализацию)
+        self.audio_to_text_attn = nn.ModuleList([
+            TransformerEncoderLayer(
+                input_dim=hidden_dim,
+                num_heads=num_transformer_heads,
+                dropout=dropout,
+                positional_encoding=positional_encoding
+            ) for _ in range(tr_layer_number)
+        ])
+
+        self.text_to_audio_attn = nn.ModuleList([
+            TransformerEncoderLayer(
+                input_dim=hidden_dim,
+                num_heads=num_transformer_heads,
+                dropout=dropout,
+                positional_encoding=positional_encoding
+            ) for _ in range(tr_layer_number)
+        ])
+
+        self.graph_fusion_feat = GraphFusionLayer(self.seg_len, heads=num_graph_heads, out_mean=False)
+        self.graph_fusion_temp = GraphFusionLayer(hidden_dim, heads=num_graph_heads, out_mean=False)
+
+        self.gated_feat = GAL(self.seg_len, self.seg_len, hidden_dim_gated, dropout_rate=dropout)
+        self.gated_temp = GAL(hidden_dim, hidden_dim, hidden_dim_gated, dropout_rate=dropout)
+
+        # Автоматический расчёт размерности для классификатора
+        self._calculate_classifier_input_dim()
+
+        # Классификатор
+        self.classifier = nn.Sequential(
+            nn.Linear(hidden_dim_gated*2, out_features),
+            nn.LayerNorm(out_features),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(out_features, num_classes)
+        )
+
+        # Финальная проекция графов
+        self.fc_graph_feat = nn.Sequential(
+            nn.Linear(self.seg_len, hidden_dim_gated),
+            nn.LayerNorm(hidden_dim_gated),
+            nn.Dropout(dropout)
+        )
+
+        self.fc_graph_temp = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim_gated),
+            nn.LayerNorm(hidden_dim_gated),
+            nn.Dropout(dropout)
+        )
+
+        # Финальная проекция gated
+        self.fc_gated_feat = nn.Sequential(
+            nn.Linear(hidden_dim_gated, hidden_dim_gated),
+            nn.LayerNorm(hidden_dim_gated),
+            nn.Dropout(dropout)
+        )
+
+        self.fc_gated_temp = nn.Sequential(
+            nn.Linear(hidden_dim_gated, hidden_dim_gated),
+            nn.LayerNorm(hidden_dim_gated),
+            nn.Dropout(dropout)
+        )
+
+        self.pred_fusion = PredictionsFusion(num_matrices=3, num_classes=num_classes)
+
+        self._init_weights()
+
+    def _calculate_classifier_input_dim(self):
+        """Вычисляет размер входных признаков для классификатора"""
+        # Тестовый проход через пулинг с dummy-данными
+        dummy_audio = torch.randn(1, self.seg_len, self.hidden_dim)
+        dummy_text = torch.randn(1, self.seg_len, self.hidden_dim)
+
+        audio_pool_temp, audio_pool_feat = self._pool_features(dummy_audio)
+        # text_pool_temp, _ = self._pool_features(dummy_text)
+
+        combined = torch.cat([audio_pool_temp, audio_pool_feat], dim=1)
+        self.classifier_input_dim = combined.size(1)
+
+    def _pool_features(self, x):
+        # Статистики по временной оси (seq_len)
+        mean_temp = x.mean(dim=1)  # [batch, hidden_dim]
+
+        # Статистики по feature оси  (hidden_dim)
+        mean_feat = x.mean(dim=-1)  # [batch, seq_len]
+
+        return mean_temp,  mean_feat
+
+    def forward(self, audio_features, text_features, audio_pred, text_pred):
+        # Проекция признаков
+        audio = self.audio_proj(audio_features.float())
+        text = self.text_proj(text_features.float())
+
+        # Адаптивный пулинг
+        min_len = min(audio.size(1), text.size(1))
+        audio = self.adaptive_temporal_pool(audio, min_len)
+        text = self.adaptive_temporal_pool(text, min_len)
+
+        # Кросс-модальное взаимодействие
+        for i in range(self.tr_layer_number):
+            attn_audio = self.audio_to_text_attn[i](text, audio, audio)
+            attn_text = self.text_to_audio_attn[i](audio, text, text)
+
+            audio = audio + attn_audio
+            text = text + attn_text
+
+        # Агрегация признаков
+        audio_pool_temp, audio_pool_feat = self._pool_features(audio)
+        text_pool_temp, text_pool_feat = self._pool_features(text)
+
+        # print(audio_pool_temp.shape, audio_pool_feat.shape, text_pool_temp.shape, text_pool_feat.shape)
+
+        graph_feat = self.graph_fusion_feat(audio_pool_feat, text_pool_feat)
+        graph_temp = self.graph_fusion_temp(audio_pool_temp, text_pool_temp)
+
+        gated_feat = self.gated_feat(graph_feat[:, 0, :], graph_feat[:, 1, :])
+        gated_temp = self.gated_temp(graph_temp[:, 0, :], graph_temp[:, 1, :])
+
+        fused_feat = self.fc_graph_feat(torch.mean(graph_feat, dim=1)) + self.fc_gated_feat(gated_feat)
+        fused_temp = self.fc_graph_temp(torch.mean(graph_temp, dim=1)) + self.fc_gated_feat(gated_temp)
+
+        # print(graph_feat.shape, graph_temp.shape)
+        # print(torch.mean(graph_feat, dim=1).shape, torch.mean(graph_temp, dim=1).shape)
+
+        # graph_feat = self.fc_feat(graph_feat)
+        # graph_temp = self.fc_temp(graph_temp)
+
+        # Классификация
+        features = torch.cat([fused_feat, fused_temp], dim=1)
+
+        # print(graph_feat.shape, graph_temp.shape, features.shape)
+        out = self.classifier(features)
+
+        w_out = self.pred_fusion([audio_pred, text_pred, out])
+        return w_out
+
+    def adaptive_temporal_pool(self, x, target_len):
+        """Адаптивное изменение временной длины"""
+        if x.size(1) == target_len:
+            return x
+
+        return F.interpolate(
+            x.permute(0, 2, 1),
+            size=target_len,
+            mode='linear',
+            align_corners=False
+        ).permute(0, 2, 1)
+
+    def _init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.LayerNorm):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+
 class BiGatedFormer(nn.Module):
     def __init__(self, audio_dim=1024, text_dim=1024, seg_len=44, hidden_dim=512, hidden_dim_gated=128,
                 num_transformer_heads=2, num_graph_heads = 2, positional_encoding=True, dropout=0.1, mode='mean',

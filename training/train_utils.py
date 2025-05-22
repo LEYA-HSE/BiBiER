@@ -19,7 +19,7 @@ from utils.measures import uar, war, mf1, wf1
 from models.models import (
     BiFormer, BiGraphFormer, BiGatedGraphFormer,
     PredictionsFusion, BiFormerWithProb, BiGatedFormer,
-    BiMamba, BiMambaWithProb
+    BiMamba, BiMambaWithProb,BiGraphFormerWithProb, BiGatedGraphFormerWithProb
 )
 from utils.schedulers import SmartScheduler
 from data_loading.dataset_multimodal import DatasetMultiModalWithPretrainedExtractors
@@ -320,6 +320,8 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
         "PredictionsFusion": PredictionsFusion, # вход audio_pred, text_pred
         "BiFormerWithProb": BiFormerWithProb, # вход audio, texts, audio_pred, text_pred
         "BiMambaWithProb": BiMambaWithProb, # вход audio, texts, audio_pred, text_pred
+        "BiGraphFormerWithProb": BiGraphFormerWithProb, # вход audio, texts, audio_pred, text_pred
+        "BiGatedGraphFormerWithProb": BiGatedGraphFormerWithProb,
     }
 
     model_cls = dict_models[config.model_name]

@@ -69,14 +69,14 @@ max_patience = 10        # максимальное число эпох без �
 save_prepared_data = true # сохранять извлеченные признаки (эмбеддинги)
 save_feature_path = './features/' # путь для сохранения эмбеддингов
 search_type = "none" # стратегия поиска: "greedy", "exhaustive" или "none"
-path_to_df_ls = 'Phi-4-mini-instruct_emotions_union.csv'    # путь к датафрейму со смягченными метками
+path_to_df_ls = 'Phi-4-mini-instruct_emotions_union.csv'  # путь к датафрейму со смягченными метками - Qwen3-4B_emotions_union или Phi-4-mini-instruct_emotions_union
 smoothing_probability = 0.0 # процент использования смягченных меток
 
 # ---------------------------
 # Параметры модели
 # ---------------------------
 [train.model]
-model_name = "BiFormer"    # название модели (BiGraphFormer, BiFormer, BiGatedGraphFormer, BiGatedFormer, BiMamba, PredictionsFusion, BiFormerWithProb, BiMambaWithProb)
+model_name = "BiGatedGraphFormerWithProb"    # название модели (BiGraphFormer, BiFormer, BiGatedGraphFormer, BiGatedFormer, BiMamba, PredictionsFusion, BiFormerWithProb, BiMambaWithProb, BiGraphFormerWithProb, BiGatedGraphFormerWithProb)
 hidden_dim = 256            # размер скрытого состояния
 hidden_dim_gated = 128      # скрытое состояние для gated механизмов
 num_transformer_heads = 16   # количество attention голов в трансформере
