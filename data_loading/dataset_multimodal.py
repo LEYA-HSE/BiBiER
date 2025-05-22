@@ -79,6 +79,9 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
         self.seed = config.random_seed
         self.dataset_name = dataset_name
         self.save_feature_path = config.save_feature_path
+        self.use_synthetic_data = config.use_synthetic_data
+        self.synthetic_path = config.synthetic_path
+        self.synthetic_ratio = config.synthetic_ratio
 
         # Загружаем CSV
         if not os.path.exists(csv_path):
@@ -120,6 +123,10 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
                 "label": emotion_label,
                 "csv_text": csv_text
             })
+
+        if self.use_synthetic_data and self.split == "train":
+            logging.info("🧪 Включена синтетика — добавляем примеры из synthetic_path")
+            self._add_synthetic_data(self.synthetic_ratio)
 
         # Создаем карту для поиска файлов по эмоции
         self.audio_class_map = {entry["audio_path"]: entry["label"] for entry in self.rows}
@@ -175,19 +182,36 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
 
         if self.save_prepared_data:
             self.meta = []
-            meta_filename = '{}_{}_seed_{}_subset_size_{}_audio_model_{}_feature_norm_{}_merge_prob_{}_pred.pickle'.format(self.dataset_name, self.split, config.audio_classifier_checkpoint[-4:-3], self.seed, self.subset_size, config.emb_normalize, config.merge_probability)
 
-            self.load_data(os.path.join( self.save_feature_path, meta_filename))
+            if self.use_synthetic_data:
+                meta_filename = '{}_{}_seed_{}_subset_size_{}_audio_model_{}_feature_norm_{}_synthetic_true_pct_{}_pred.pickle'.format(
+                    self.dataset_name,
+                    self.split,
+                    config.audio_classifier_checkpoint[-4:-3],
+                    self.seed,
+                    self.subset_size,
+                    config.emb_normalize,
+                    int(self.synthetic_ratio * 100)
+                )
+
+            else:
+                meta_filename = '{}_{}_seed_{}_subset_size_{}_audio_model_{}_feature_norm_{}_merge_prob_{}_pred.pickle'.format(
+                    self.dataset_name,
+                    self.split,
+                    config.audio_classifier_checkpoint[-4:-3],
+                    self.seed,
+                    self.subset_size,
+                    config.emb_normalize,
+                    self.merge_probability
+                )
+
+            pickle_path = os.path.join(self.save_feature_path, meta_filename)
+            self.load_data(pickle_path)
 
             if not self.meta:
                 self.prepare_data()
                 os.makedirs(self.save_feature_path, exist_ok=True)
-                self.save_data(os.path.join(self.save_feature_path, meta_filename))
-
-        # # Инициализируем Whisper-модель один раз
-        # logging.info(f"Инициализация Whisper: модель={self.whisper_model_name}, устройство={self.whisper_device}")
-        # self.whisper_model = whisper.load_model(self.whisper_model_name, device=self.whisper_device).eval()
-        # # print(f"📦 Whisper работает на устройстве: {self.whisper_model.device}")
+                self.save_data(pickle_path)
 
     def save_data(self, filename):
         with open(filename, 'wb') as handle:
@@ -284,18 +308,6 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
             # Если файл не в списке "должны склеить" или сплит не train, пропускаем chain-merge
             logging.debug("Файл не выбран для склейки (или не train), пропускаем chain merge.")
 
-        # # Шаг 3. Если итоговая длина меньше target_samples, паддинг нулями
-        # curr_len = waveform.shape[1]
-        # if curr_len < self.target_samples:
-        #     pad_size = self.target_samples - curr_len
-        #     logging.debug(f"Паддинг {os.path.basename(audio_path)}: +{pad_size} сэмплов")
-        #     waveform = torch.nn.functional.pad(waveform, (0, pad_size))
-
-        # # Шаг 4. Обрезаем аудио до target_samples (если вышло больше)
-        # waveform = waveform[:, :self.target_samples]
-        # logging.debug(f"Финальная длина {os.path.basename(audio_path)}: {waveform.shape[1]/sr:.2f} сек; was_merged={was_merged}")
-
-        # Шаг 5. Получаем текст
         if was_merged:
             logging.debug("📝 Текст: аудио было merged – вызываем Whisper.")
             text_final = self.run_whisper(waveform)
@@ -377,18 +389,6 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
             eq_len = self.path_info.get(path, 0)  # Получаем из кэша
             all_info.append((eq_len, path))
 
-        # --- Ниже старый код, который был:
-        # for path in candidates:
-        #     try:
-        #         info = torchaudio.info(path)
-        #         length = info.num_frames
-        #         sr_ = info.sample_rate
-        #         eq_len = int(length / (sr_ / self.sample_rate)) if sr_ != self.sample_rate else length
-        #         all_info.append((eq_len, path))
-        #     except Exception as e:
-        #         logging.warning(f"⚠ Ошибка чтения {path}: {e}")
-
-        # 1) Фильтруем только >= min_needed
         valid = [(l, p) for l, p in all_info if l >= min_needed]
         logging.debug(f"✅ Подходящих (>= {min_needed}): {len(valid)} (из {len(all_info)})")
 
@@ -423,6 +423,55 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
         except Exception as e:
             logging.error(f"Whisper ошибка: {e}")
             return ""
+
+    def _add_synthetic_data(self, synthetic_ratio):
+        """
+        Добавляет synthetic_ratio (0..1) от количества доступных синтетических файлов на каждую эмоцию.
+        """
+        if not self.synthetic_path:
+            logging.warning("⚠ Путь к синтетическим данным не указан.")
+            return
+
+        random.seed(self.seed)
+
+        synth_csv_path = os.path.join(self.synthetic_path, "meld_s_train_labels.csv")
+        synth_wav_dir = os.path.join(self.synthetic_path, "wavs")
+
+        if not (os.path.exists(synth_csv_path) and os.path.exists(synth_wav_dir)):
+            logging.warning("⚠ Синтетические данные не найдены.")
+            return
+
+        df_synth = pd.read_csv(synth_csv_path)
+        rows_by_label = {emotion: [] for emotion in self.emotion_columns}
+
+        for _, row in df_synth.iterrows():
+            audio_path = os.path.join(synth_wav_dir, f"{row['video_name']}.wav")
+            if not os.path.exists(audio_path):
+                continue
+            emotion_values = row[self.emotion_columns].values.astype(float)
+            max_idx = np.argmax(emotion_values)
+            label = self.emotion_columns[max_idx]
+            csv_text = row[self.text_column] if self.text_column in row and isinstance(row[self.text_column], str) else ""
+            rows_by_label[label].append({
+                "audio_path": audio_path,
+                "label": label,
+                "csv_text": csv_text
+            })
+
+        added = 0
+        for label in self.emotion_columns:
+            candidates = rows_by_label[label]
+            if not candidates:
+                continue
+            count_synth = int(len(candidates) * synthetic_ratio)
+            if count_synth <= 0:
+                continue
+            selected = random.sample(candidates, count_synth)
+            self.rows.extend(selected)
+            added += len(selected)
+            logging.info(f"➕ Добавлено {len(selected)} синтетических примеров для эмоции '{label}'")
+
+        logging.info(f"📦 Всего добавлено {added} синтетических примеров из MELD_S")
 
     def emotion_to_vector(self, label_name):
         """

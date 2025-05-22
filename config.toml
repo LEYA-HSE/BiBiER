@@ -12,6 +12,12 @@ base_dir = "E:/RESD"
 csv_path = "{base_dir}/resd_{split}_labels.csv"
 wav_dir  = "{base_dir}/wavs/{split}"
 
+[synthetic_data]
+use_synthetic_data = true
+synthetic_path = "E:/MELD_S"
+synthetic_ratio = 0.01
+# resd = false
+# resd_path = "E:/RESD_S"
 
 # ---------------------------
 # Список модальностей и эмоций
@@ -61,7 +67,7 @@ use_whisper_for_nontrain_if_no_text = true
 # ---------------------------
 [train.general]
 random_seed = 42         # фиксируем random seed для воспроизводимости (0 = каждый раз разный)
-subset_size = 20         # ограничение на количество примеров (0 = использовать весь датасет)
+subset_size = 100         # ограничение на количество примеров (0 = использовать весь датасет)
 merge_probability = 0    # процент склеивания коротких файлов
 batch_size = 8         # размер батча
 num_epochs = 75           # число эпох тренировки

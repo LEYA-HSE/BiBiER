@@ -26,6 +26,14 @@ class ConfigLoader:
         self.datasets = self.config.get("datasets", {})
 
         # ---------------------------
+        # Пути к синтетическим данным
+        # ---------------------------
+        synthetic_data_cfg = self.config.get("synthetic_data", {})
+        self.use_synthetic_data = synthetic_data_cfg.get("use_synthetic_data", False)
+        self.synthetic_path = synthetic_data_cfg.get("synthetic_path", "E:/MELD_S")
+        self.synthetic_ratio = synthetic_data_cfg.get("synthetic_ratio", 0.0)
+
+        # ---------------------------
         # Модальности и эмоции
         # ---------------------------
         self.modalities = self.config.get("modalities", ["audio"])
