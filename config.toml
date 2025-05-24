@@ -15,9 +15,7 @@ wav_dir  = "{base_dir}/wavs/{split}"
 [synthetic_data]
 use_synthetic_data = true
 synthetic_path = "E:/MELD_S"
-synthetic_ratio = 0.01
-# resd = false
-# resd_path = "E:/RESD_S"
+synthetic_ratio = 0.005
 
 # ---------------------------
 # Список модальностей и эмоций
@@ -25,7 +23,6 @@ synthetic_ratio = 0.01
 modalities = ["audio"]
 # emotion_columns = ["neutral", "happy", "sad", "anger", "surprise", "disgust", "fear"]
 emotion_columns = ["anger", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
-
 
 # ---------------------------
 # DataLoader параметры
@@ -82,7 +79,7 @@ smoothing_probability = 0.0 # процент использования смяг
 # Параметры модели
 # ---------------------------
 [train.model]
-model_name = "BiGatedGraphFormerWithProb"    # название модели (BiGraphFormer, BiFormer, BiGatedGraphFormer, BiGatedFormer, BiMamba, PredictionsFusion, BiFormerWithProb, BiMambaWithProb, BiGraphFormerWithProb, BiGatedGraphFormerWithProb)
+model_name = "BiFormer"    # название модели (BiGraphFormer, BiFormer, BiGatedGraphFormer, BiGatedFormer, BiMamba, PredictionsFusion, BiFormerWithProb, BiMambaWithProb, BiGraphFormerWithProb, BiGatedGraphFormerWithProb)
 hidden_dim = 256            # размер скрытого состояния
 hidden_dim_gated = 128      # скрытое состояние для gated механизмов
 num_transformer_heads = 16   # количество attention голов в трансформере

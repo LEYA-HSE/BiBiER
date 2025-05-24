@@ -1,4 +1,4 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 
 import os
 import random
@@ -124,8 +124,8 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
                 "csv_text": csv_text
             })
 
-        if self.use_synthetic_data and self.split == "train":
-            logging.info("🧪 Включена синтетика — добавляем примеры из synthetic_path")
+        if self.use_synthetic_data and self.split == "train" and self.dataset_name.lower() == "meld":
+            logging.info(f"🧪 Включена синтетика для датасета '{self.dataset_name}' — добавляем примеры из: {self.synthetic_path}")
             self._add_synthetic_data(self.synthetic_ratio)
 
         # Создаем карту для поиска файлов по эмоции
