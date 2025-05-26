@@ -13,7 +13,7 @@ csv_path = "{base_dir}/resd_{split}_labels.csv"
 wav_dir  = "{base_dir}/wavs/{split}"
 
 [synthetic_data]
-use_synthetic_data = true
+use_synthetic_data = false
 synthetic_path = "E:/MELD_S"
 synthetic_ratio = 0.005
 
@@ -69,6 +69,7 @@ merge_probability = 0    # процент склеивания коротких 
 batch_size = 8         # размер батча
 num_epochs = 75           # число эпох тренировки
 max_patience = 10        # максимальное число эпох без улучшений (для Early Stopping)
+save_best_model = false
 save_prepared_data = true # сохранять извлеченные признаки (эмбеддинги)
 save_feature_path = './features/' # путь для сохранения эмбеддингов
 search_type = "none" # стратегия поиска: "greedy", "exhaustive" или "none"

@@ -79,6 +79,7 @@ class ConfigLoader:
         self.batch_size = train_general.get("batch_size", 8)
         self.num_epochs = train_general.get("num_epochs", 100)
         self.max_patience = train_general.get("max_patience", 10)
+        self.save_best_model = train_general.get("save_best_model", False)
         self.save_prepared_data = train_general.get("save_prepared_data", True)
         self.save_feature_path = train_general.get("save_feature_path", "./features/")
         self.search_type = train_general.get("search_type", "none")

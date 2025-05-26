@@ -10,6 +10,7 @@ import pandas as pd
 from tqdm import tqdm
 from typing import Type
 import os
+import datetime
 
 from torch.utils.data import DataLoader, ConcatDataset, WeightedRandomSampler
 from torch.nn.utils.rnn import pad_sequence
@@ -259,6 +260,12 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
     """
 
     logging.info("== Запуск тренировки (train/dev/test) ==")
+
+    checkpoint_dir = None
+    if config.save_best_model:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        checkpoint_dir = os.path.join("checkpoints", f"{config.model_name}_{timestamp}")
+        os.makedirs(checkpoint_dir, exist_ok=True)
 
     csv_writer = None
     csv_file = None
@@ -557,6 +564,13 @@ def train_once(config, train_loader, dev_loaders, test_loaders, metrics_csv_path
                 "mean": np.mean([ds["mean"] for ds in test_metrics_by_dataset]),
                 "by_dataset": test_metrics_by_dataset
             }
+
+            if config.save_best_model:
+                dev_str = f"{mean_dev:.4f}".replace(".", "_")
+                model_path = os.path.join(checkpoint_dir, f"best_model_dev_{dev_str}_epoch_{epoch}.pt")
+                torch.save(model.state_dict(), model_path)
+                logging.info(f"💾 Модель сохранена по лучшему dev (эпоха {epoch}): {model_path}")
+
         else:
             patience_counter += 1
             if patience_counter >= max_patience:

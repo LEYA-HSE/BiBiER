@@ -91,6 +91,10 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
             df = df.head(self.subset_size)
             logging.info(f"[DatasetMultiModal] Используем только первые {len(df)} записей (subset_size={self.subset_size}).")
 
+        #копия для сохранения текста Wisper
+        self.original_df = df.copy()
+        self.whisper_csv_update_log = []
+
         # Проверяем наличие всех колонок эмоций
         missing = [c for c in emotion_columns if c not in df.columns]
         if missing:
@@ -312,6 +316,18 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
             logging.debug("📝 Текст: аудио было merged – вызываем Whisper.")
             text_final = self.run_whisper(waveform)
             logging.debug(f"🆕 Whisper предсказал: {text_final}")
+
+            merge_components = [os.path.splitext(os.path.basename(audio_path))[0]]
+            merge_components += [os.path.splitext(os.path.basename(p))[0] for p in used_candidates]
+
+            self.whisper_csv_update_log.append({
+                "video_name": os.path.splitext(os.path.basename(audio_path))[0],
+                "text_new": text_final,
+                "text_old": csv_text,
+                "was_merged": True,
+                "merge_components": merge_components
+            })
+
         else:
             if csv_text.strip():
                 logging.debug("Текст: используем CSV-текст (не пуст).")
@@ -323,6 +339,7 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
                 else:
                     logging.debug("Текст: CSV пустой и не вызываем Whisper для dev/test.")
                     text_final = ""
+
         audio_pred, audion_emb = self.audio_feature_extractor.extract(waveform[0], self.sample_rate)
         text_pred, text_emb = self.text_feature_extractor.extract(text_final)
 
@@ -337,15 +354,43 @@ class DatasetMultiModalWithPretrainedExtractors(Dataset):
 
     def prepare_data(self):
         """
-        Загружает и обрабатывает один элемент датасета (он‑the‑fly).
+        Загружает и обрабатывает один элемент датасета,
+        сохраняет эмбеддинги и обновлённый текст (если было склеено).
         """
-
         for idx, row in enumerate(tqdm(self.rows)):
             curr_dict = self.get_data(row)
+            if curr_dict is not None:
+                self.meta.append(curr_dict)
 
-            self.meta.append(
-            curr_dict
+        # === Сохраняем CSV с обновлёнными текстами (только если был merge) ===
+        if self.whisper_csv_update_log:
+            df_log = pd.DataFrame(self.whisper_csv_update_log)
+
+            # Копия исходного CSV
+            df_out = self.original_df.copy()
+
+            # Мержим по video_name
+            df_out = df_out.merge(df_log, on="video_name", how="left")
+
+            # Обновляем текст: заменяем только если Whisper сгенерировал
+            df_out["text_final"] = df_out["text_new"].combine_first(df_out["text"])
+            df_out["text_old"] = df_out["text"]
+            df_out["text"] = df_out["text_final"]
+            df_out["was_merged"] = df_out["was_merged"].fillna(False).astype(bool)
+
+            # Преобразуем merge_components в строку
+            df_out["merge_components"] = df_out["merge_components"].apply(
+                lambda x: ";".join(x) if isinstance(x, list) else ""
             )
+
+            # Чистим временные колонки
+            df_out = df_out.drop(columns=["text_new", "text_final"])
+
+            # Сохраняем как CSV
+            output_path = os.path.join(self.save_feature_path, f"{self.dataset_name}_{self.split}_merged_whisper_{self.merge_probability *100}.csv")
+            os.makedirs(self.save_feature_path, exist_ok=True)
+            df_out.to_csv(output_path, index=False, encoding="utf-8")
+            logging.info(f"📄 Обновлённый merged CSV сохранён: {output_path}")
 
     def __getitem__(self, index):
         if self.save_prepared_data:
@@ -509,7 +554,7 @@ class DatasetMultiModal(Dataset):
         emotion_columns,
         split="train",
         sample_rate=16000,
-        wav_length=2,
+        wav_length=4,
         whisper_model="tiny",
         text_column="text",
         use_whisper_for_nontrain_if_no_text=True,
