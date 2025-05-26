@@ -2,10 +2,14 @@
 
 
 ### Template-Based Utterance Generation
-**Description:**
-This prompt is designed for generating structured emotional utterance templates using a large language model (LLM), based on the style and tone of the MELD corpus (Multimodal EmotionLines Dataset). The generated content is used to create **synthetic dialogue data** for tasks such as **emotion classification**, **expressive text-to-speech (TTS)**, and **multimodal affective computing**.
 
-Each generated JSON defines reusable components (subjects, verbs, interjections, contexts, templates) that can be sampled and composed into thousands of emotion-specific utterances suitable for training or augmenting emotion-aware systems.
+**Description:**
+This prompt is designed for generating structured emotional utterance templates using a large language model (LLM), based on the style and tone of the MELD corpus (Multimodal EmotionLines Dataset). The generated content is used to create synthetic dialogue data for tasks such as emotion classification, expressive text-to-speech (TTS), and multimodal affective computing.
+
+Each generated JSON defines reusable components (`subjects`, `verbs`, `interjections`, `contexts`, `templates`) that can be sampled and composed into thousands of emotion-specific utterances suitable for training or augmenting emotion-aware systems.
+
+All generations were performed using **ChatGPT-4o**, a GPT-4-based model provided by OpenAI, which demonstrated strong stylistic and emotional consistency aligned with the MELD corpus.
+
 
 ### 🟦 Prompt:
 ```
