@@ -1,7 +1,7 @@
 # ESWA_2025
 
 
-### Template-Based Utterance Generation
+### TUG: Template-Based Utterance Generation
 
 **Description:**
 This prompt is designed for generating structured emotional utterance templates using a large language model (LLM), based on the style and tone of the MELD corpus (Multimodal EmotionLines Dataset). The generated content is used to create synthetic dialogue data for tasks such as emotion classification, expressive text-to-speech (TTS), and multimodal affective computing.
