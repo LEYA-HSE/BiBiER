@@ -1,5 +1,43 @@
-# ESWA_2025
+# A Novel Data Augmentation Method for Improving the Generalizability of Bilingual Bimodal Emotion Recognition Systems
 
+This repository accompanies the publication in **Expert Systems with Applications (ESWA), 2025**:
+
+> **A Novel Data Augmentation Method for Improving the Generalizability of Bilingual Bimodal Emotion Recognition Systems**
+> Elena Ryumina, Alexandr Axyonov, Timur Abdulkadirov, Darya Koryakovskaya, Svetlana Gorovaya, Anna Bykova, Dmitry Vikhorev, Dmitry Ryumin
+> HSE University, St. Petersburg
+
+---
+
+## 🧠 Abstract
+
+Emotion recognition (ER) is essential for real-world human-computer interaction, but multimodal systems that use audio, text, and video are often too complex for practical applications. Bimodal audio-text systems provide a more feasible balance between accuracy and efficiency, particularly in scenarios where visual input is unavailable.
+
+This research introduces a bilingual Bimodal Emotion Recognition (BER) system that integrates Mamba-based audio and text encoders within a Transformer-based cross-modal fusion. The architecture improves generalizability across an English-Russian corpus (MELD and RESD).
+
+We propose three novel data augmentation strategies:
+- **SDS (Stacked Data Sampling)** — merges short utterances with the same label to simulate longer sequences.
+- **TUG (Template-based Utterance Generation)** — synthesizes new emotional utterances using ChatGPT-4o and generates audio via DIA-TTS with expressive control.
+- **LS-LLM (Label Smoothing with Large Language Models)** — replaces one-hot labels with soft distributions predicted by LLMs.
+
+Each method brings corpus-specific benefits. TUG improves performance on MELD (variable-length utterances), LS-LLM benefits RESD (emotionally blended content), and SDS helps both via sequence normalization. Combined use yields further performance gains.
+
+Our best models achieve:
+- **WF1 = 68.31%** on MELD
+- **WF1 = 85.25%** on RESD
+
+---
+
+## 📊 Key Features
+
+- Bilingual bimodal fusion using Mamba + Transformer + Graph attention
+- Cross-corpus training with MELD (English) and RESD (Russian)
+- **SDS (Stacked Data Sampling)** — context extension through multi-segment merging
+- **TUG (Template-based Utterance Generation)** — ChatGPT-4o + DIA-TTS for expressive data synthesis with inline prosody tags
+- **LS-LLM (Label Smoothing with LLMs)** — zero-shot probability distributions from Qwen3-4B and Phi-4-mini-instruct
+- Corpus-specific optimization of augmentation ratios
+- Evaluation across both single-corpus and multi-corpus setups
+
+---
 
 ### Template-Based Utterance Generation
 
@@ -50,7 +88,7 @@ subjects, verbs, interjections, contexts, templates
 
 ---
 
-### LS-LLM: Label Smoothing with Large Language Models
+### LS-LLM: Label Smoothing Generation based on Large Language Model
 
 **Description:**
 This prompt is used to implement a semantic-aware label smoothing technique for emotion classification. Instead of using a flat (uniform) smoothing across all non-target labels, this method leverages zero-shot large language models (LLMs) to generate a **context-informed probability distribution** over the emotion classes. The model is prompted to analyze the input text and output soft labels, where the **ground truth emotion is given the highest probability**, and other plausible emotions receive proportionally smaller weights.
@@ -98,3 +136,16 @@ Expected Output (sample):
 This prompt can be used in any fine-tuning or pseudo-labeling loop to dynamically generate soft labels aligned with LLM-informed emotion inference.
 
 ---
+
+
+## 📝 Citation
+
+If you use this work, please cite:
+
+```bibtex
+@article{ryumina2025ber,
+  title = {A Novel Data Augmentation Method for Improving the Generalizability of Bilingual Bimodal Emotion Recognition Systems},
+  author = {Ryumina, Elena and Axyonov, Alexandr and Abdulkadirov, Timur and Koryakovskaya, Darya and Gorovaya, Svetlana and Bykova, Anna and Vikhorev, Dmitry and Ryumin, Dmitry},
+  journal = {Expert Systems with Applications},
+  year = {2025}
+}
