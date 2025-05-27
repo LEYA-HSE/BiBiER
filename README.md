@@ -51,7 +51,7 @@ All generations were performed using **ChatGPT-4o**, a GPT-4-based model provide
 
 ### 🟦 Prompt:
 ```
-You are an expert language model trained to synthesize emotional utterance templates for expressive speech synthesis and affective data generation. Your task is to generate a structured set of phrase components based on examples from the MELD dataset.
+You are an expert language model trained to synthesize emotional utterance templates for expressive speech synthesis and affective data generation. Your task is to generate a structured set of phrase components based on examples from the MELD corpus.
 
 Instructions:
 - You will receive several short utterances labeled with a specific emotion.
@@ -93,7 +93,7 @@ subjects, verbs, interjections, contexts, templates
 **Description:**
 This prompt is used to implement a semantic-aware label smoothing technique for emotion classification. Instead of using a flat (uniform) smoothing across all non-target labels, this method leverages zero-shot large language models (LLMs) to generate a **context-informed probability distribution** over the emotion classes. The model is prompted to analyze the input text and output soft labels, where the **ground truth emotion is given the highest probability**, and other plausible emotions receive proportionally smaller weights.
 
-This approach is referred to as **LS-LLM** in our experiments and is compatible with any LLM that supports zero-shot text classification. It was tested using lightweight models (e.g., Phi-4-mini-instruct, Qwen3-4B), both under 4B parameters, as detailed in our comparison table.
+This method is referred to as **LS-LLM** in our experiments and is compatible with any LLM that supports zero-shot text classification. It was tested using lightweight models (e.g., Phi-4-mini-instruct, Qwen3-4B), both under 4B parameters, as detailed in our comparison table.
 
 
 
