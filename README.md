@@ -10,32 +10,19 @@ This repository accompanies the publication in **Expert Systems with Application
 
 ## 🧠 Abstract
 
-Emotion recognition (ER) is essential for real-world human-computer interaction, but multimodal systems that use audio, text, and video are often too complex for practical applications. Bimodal audio-text systems provide a more feasible balance between accuracy and efficiency, particularly in scenarios where visual input is unavailable.
-
-This research introduces a bilingual Bimodal Emotion Recognition (BER) system that integrates Mamba-based audio and text encoders within a Transformer-based cross-modal fusion. The architecture improves generalizability across an English-Russian corpus (MELD and RESD).
-
-We propose three novel data augmentation strategies:
-- **SDS (Stacked Data Sampling)** — merges short utterances with the same label to simulate longer sequences.
-- **TUG (Template-based Utterance Generation)** — synthesizes new emotional utterances using ChatGPT-4o and generates audio via DIA-TTS with expressive control.
-- **LS-LLM (Label Smoothing with Large Language Models)** — replaces one-hot labels with soft distributions predicted by LLMs.
-
-Each method brings corpus-specific benefits. TUG improves performance on MELD (variable-length utterances), LS-LLM benefits RESD (emotionally blended content), and SDS helps both via sequence normalization. Combined use yields further performance gains.
-
-Our best models achieve:
-- **WF1 = 68.31%** on MELD
-- **WF1 = 85.25%** on RESD
+Emotion Recognition (ER) is essential for real-world human-computer interaction, but multimodal systems that use audio, text, and video are often too complex for practical applications. Bimodal audio-text systems provide a more feasible balance between accuracy and efficiency, particularly in applications where visual input is either unavailable or impractical. This research introduces a bilingual bimodal emotion recognition (BER) s system that integrates Mamba-based audio and text encoders within a Transformer-based cross-modal fusion. This architecture enables the system to improve its generalizability across an English-Russian corpus, comprising the MELD and RESD corpora. Bilingual bimodal fusion significantly outperforms the unimodal bilingual baselines (UAR=38.54% vs. 36.17% vs. 28.00% on MELD and UAR=67.89% vs. 37.20% vs. 60.79% on RESD). Moreover, the performance of the attention mechanism used for bimodal fusion depends on the corpus. Transformer-based attention is sufficient for shorter utterances in MELD, whereas Transformer- and graph-based attention yields better results for longer sequences in RESD. We also propose novel data augmentation strategies, including SDS and LS-LLM. The results show corpus-specific benefits: SDS improves performance on MELD, which contains utterances with variable durations; LS-LLM enhances results on RESD, which contains utterances with multiple emotional expressions. The combined use of both augmentation methods yields improvements across both corpora. Our multi-corpus training demonstrates strong bilingual generalization, while the single-corpus setup outperforms existing SOTA methods, achieving WF1=68.31% on MELD and WF1=85.25% on RESD.
 
 ---
 
 ## 📊 Key Features
 
-- Bilingual bimodal fusion using Mamba + Transformer + Graph attention
-- Cross-corpus training with MELD (English) and RESD (Russian)
-- **SDS (Stacked Data Sampling)** — context extension through multi-segment merging
-- **TUG (Template-based Utterance Generation)** — ChatGPT-4o + DIA-TTS for expressive data synthesis with inline prosody tags
-- **LS-LLM (Label Smoothing with LLMs)** — zero-shot probability distributions from Qwen3-4B and Phi-4-mini-instruct
-- Corpus-specific optimization of augmentation ratios
-- Evaluation across both single-corpus and multi-corpus setups
+- A novel Bilingual Bimodal Emotion Recognition Model for English-Russian generalization.
+
+- A novel Transformer-based Cross-Modal Fusion Strategy for capturing intra- and inter- spatiotemporal audio-text features.
+
+- A novel Stacked Data Sampling Strategy for merging same-label utterances into richer fixed-length emotional segments.
+
+- A novel LLM-based Label Smoothing Strategy for correcting ambiguous or multi-emotion labels via soft distributions.
 
 ---
 
