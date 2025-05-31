@@ -2,12 +2,6 @@
 
 This repository accompanies the publication in **Expert Systems with Applications (ESWA), 2025**:
 
-> **A Novel Data Augmentation Method for Improving the Generalizability of Bilingual Bimodal Emotion Recognition Systems**
-> 
-> Elena Ryumina, Alexandr Axyonov, Timur Abdulkadirov, Darya Koryakovskaya, Svetlana Gorovaya, Anna Bykova, Dmitry Vikhorev, Dmitry Ryumin
-> 
-> HSE University, St. Petersburg
-
 ---
 
 ## 🧠 Abstract
