@@ -38,7 +38,7 @@ class CustomMambaBlock(nn.Module):
         x = self.dropout(x)
         x = self.norm(x + x_in)  # residual + norm
         return x
-    
+
 class CustomMambaClassifier(nn.Module):
     def __init__(self, input_size=1024, d_model=256, num_layers=2, num_classes=7, dropout=0.1):
         super().__init__()
@@ -87,14 +87,14 @@ class EmotionModel(Wav2Vec2PreTrainedModel):
         outputs = self.wav2vec2(input_values)
         hidden_states = outputs[0]  # (batch_size, sequence_length, hidden_size)
         return hidden_states
-    
+
 ## Text models
 
 class Embedding():
-    def __init__(self, model_name='jinaai/jina-embeddings-v3', pooling=None):
+    def __init__(self, model_name='jinaai/jina-embeddings-v3', pooling=None, device='cuda'):
         self.model_name = model_name
         self.pooling = pooling
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = device
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, code_revision='da863dd04a4e5dce6814c6625adfba87b83838aa', trust_remote_code=True)
         self.model = AutoModel.from_pretrained(model_name, code_revision='da863dd04a4e5dce6814c6625adfba87b83838aa', trust_remote_code=True).to(self.device)
         self.model.eval()
@@ -110,41 +110,42 @@ class Embedding():
         sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
         sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
         return sentence_embeddings.unsqueeze(1)
-    
+
     def get_embeddings(self, X, max_len):
         encoded_input = self.tokenizer(X, padding=True, truncation=True, return_tensors='pt').to(self.device)
         with torch.no_grad():
             features = self.model(**encoded_input)[0].detach().cpu().float().numpy()
         res = np.pad(features[:, :max_len, :], ((0, 0), (0, max(0, max_len - features.shape[1])), (0, 0)), "constant")
-        return torch.tensor(res)
-        
+        return torch.tensor(res).to(self.device)
+
 class RMSNorm(nn.Module):
     def __init__(self, d_model: int, eps: float = 1e-8) -> None:
         super().__init__()
         self.eps = eps
         self.weight = nn.Parameter(torch.ones(d_model))
 
-    def forward(self, x: Tensor) -> Tensor:        
+    def forward(self, x: Tensor) -> Tensor:
         return x * torch.rsqrt(x.pow(2).mean(-1, keepdim = True) + self.eps) * self.weight
 
 class Mamba(nn.Module):
-    def __init__(self, num_layers, d_input, d_model, d_state=16, d_discr=None, ker_size=4, num_classes=7, max_tokens=95, model_name='jina', pooling=None):
+    def __init__(self, num_layers, d_input, d_model, d_state=16, d_discr=None, ker_size=4, num_classes=7, max_tokens=95, model_name='jina', pooling=None, device='cuda'):
         super().__init__()
         mamba_par = {
             'd_input' : d_input,
             'd_model' : d_model,
             'd_state' : d_state,
             'd_discr' : d_discr,
-            'ker_size': ker_size
+            'ker_size': ker_size,
+            'device': device
         }
         self.model_name = model_name
         self.max_tokens = max_tokens
-        embed = Embedding(model_name, pooling)
+        self.device = device
+        embed = Embedding(model_name, pooling, device=device)
         self.embedding = embed.get_embeddings
         self.layers = nn.ModuleList([nn.ModuleList([MambaBlock(**mamba_par), RMSNorm(d_input)]) for _ in range(num_layers)])
         self.fc_out = nn.Linear(d_input, num_classes)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        
+
     def forward(self, seq, cache=None, with_features=True):
         seq = self.embedding(seq, self.max_tokens).to(self.device)
         for mamba, norm in self.layers:
@@ -154,9 +155,9 @@ class Mamba(nn.Module):
             return self.fc_out(seq.mean(dim = 1)), seq
         else:
             return self.fc_out(seq.mean(dim = 1))
-        
+
 class MambaBlock(nn.Module):
-    def __init__(self, d_input, d_model, d_state=16, d_discr=None, ker_size=4):
+    def __init__(self, d_input, d_model, d_state=16, d_discr=None, ker_size=4, device='cuda'):
         super().__init__()
         d_discr = d_discr if d_discr is not None else d_model // 16
         self.in_proj  = nn.Linear(d_input, 2 * d_model, bias=False)
@@ -174,8 +175,8 @@ class MambaBlock(nn.Module):
         )
         self.A = nn.Parameter(torch.arange(1, d_state + 1, dtype=torch.float).repeat(d_model, 1))
         self.D = nn.Parameter(torch.ones(d_model, dtype=torch.float))
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        
+        self.device = device
+
     def forward(self, seq, cache=None):
         b, l, d = seq.shape
         (prev_hid, prev_inp) = cache if cache is not None else (None, None)
@@ -185,14 +186,14 @@ class MambaBlock(nn.Module):
         a = self.conv(x)[..., :l]
         a = rearrange(a, 'b d l -> b l d')
         a = silu(a)
-        a, hid = self.ssm(a, prev_hid=prev_hid) 
+        a, hid = self.ssm(a, prev_hid=prev_hid)
         b = silu(b)
         out = a * b
         out =  self.out_proj(out)
         if cache:
-            cache = (hid.squeeze(), x[..., 1:])   
+            cache = (hid.squeeze(), x[..., 1:])
         return out, cache
-    
+
     def ssm(self, seq, prev_hid):
         A = -self.A
         D = +self.D
@@ -206,7 +207,7 @@ class MambaBlock(nn.Module):
         out = einsum(hid, C, 'b l d s, b l s -> b l d')
         out = out + D * seq
         return out, hid
-    
+
     def _hid_states(self, A, X, prev_hid=None):
         b, l, d, s = A.shape
         A = rearrange(A, 'b l d s -> l b d s')
@@ -215,4 +216,3 @@ class MambaBlock(nn.Module):
             return rearrange(A * prev_hid + X, 'l b d s -> b l d s')
         h = torch.zeros(b, d, s, device=self.device)
         return torch.stack([h := A_t * h + X_t for A_t, X_t in zip(A, X)], dim=1)
-

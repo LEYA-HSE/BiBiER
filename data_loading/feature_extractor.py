@@ -362,7 +362,7 @@ class PretrainedTextEmbeddingExtractor:
         self.max_tokens = config.max_tokens
         self.text_classifier_checkpoint = config.text_classifier_checkpoint
 
-        self.model = Mamba(num_layers = 2, d_input = 1024, d_model = 512, num_classes=7, model_name=self.model_name, max_tokens=self.max_tokens, pooling=None).to(self.device)
+        self.model = Mamba(num_layers = 2, d_input = 1024, d_model = 512, num_classes=7, model_name=self.model_name, max_tokens=self.max_tokens, pooling=None,device=self.device).to(self.device)
         checkpoint = torch.load(self.text_classifier_checkpoint, map_location=self.device)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.model.eval()
