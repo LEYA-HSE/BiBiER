@@ -1,6 +1,6 @@
 # A Novel Data Augmentation Method for Improving the Generalizability of Bilingual Bimodal Emotion Recognition Systems
 
-This repository accompanies the publication in **Expert Systems with Applications (ESWA), 2025**:
+This repository accompanies the publication in **Expert Systems with Applications (ESWA), 2025**.
 
 ---
 
