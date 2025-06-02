@@ -1,4 +1,4 @@
-# A Novel Data Augmentation Method for Improving the Generalizability of Bilingual Bimodal Emotion Recognition Systems
+# BiBiER: A Bilingual Bimodal Emotion Recognition Method with Improved Generalization through Data Augmentation
 
 This repository accompanies the publication in **Expert Systems with Applications (ESWA), 2025**:
 
@@ -130,7 +130,7 @@ If you use this work, please cite:
 
 ```bibtex
 @article{ryumina2025ber,
-  title = {A Novel Data Augmentation Method for Improving the Generalizability of Bilingual Bimodal Emotion Recognition Systems},
+  title = {BiBiER: A Bilingual Bimodal Emotion Recognition Method with Improved Generalization through Data Augmentation},
   author = {Ryumina, Elena and Axyonov, Alexandr and Abdulkadirov, Timur and Koryakovskaya, Darya and Gorovaya, Svetlana and Bykova, Anna and Vikhorev, Dmitry and Ryumin, Dmitry},
   journal = {Expert Systems with Applications},
   year = {2025}
