@@ -1,4 +1,4 @@
-# A Novel Data Augmentation Method for Improving the Generalizability of Bilingual Bimodal Emotion Recognition Systems
+# BiBiER: A Bilingual Bimodal Emotion Recognition Method with Improved Generalization through Data Augmentation
 
 This repository accompanies the publication in **Expert Systems with Applications (ESWA), 2025**.
 
