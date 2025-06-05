@@ -2,8 +2,8 @@
 
 This repository accompanies the publication in **Expert Systems with Applications (ESWA), 2025**:
 
-> Elena Ryumina, Alexandr Axyonov, Timur Abdulkadirov, Darya Koryakovskaya, Svetlana Gorovaya, Anna Bykova, Dmitry Vikhorev, Dmitry Ryumin
-> HSE University, St. Petersburg
+> [Elena Ryumina](https://scholar.google.com/citations?user=DOBkQssAAAAJ), [Alexandr Axyonov](https://scholar.google.com/citations?user=Hs95wd4AAAAJ), Timur Abdulkadirov, Darya Koryakovskaya, Svetlana Gorovaya, Anna Bykova, Dmitry Vikhorev, [Dmitry Ryumin](https://scholar.google.com/citations?user=LrTIp5IAAAAJ)
+> HSE University
 
 ---
 
