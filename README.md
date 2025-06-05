@@ -140,12 +140,14 @@ This prompt can be used in any fine-tuning or pseudo-labeling loop to dynamicall
 
 ## 📝 Citation
 
-If you use this work, please cite:
+If you use this work, please cite the following paper (currently under review):
 
 ```bibtex
 @article{ryumina2025ber,
-  title = {BiBiER: A Bilingual Bimodal Emotion Recognition Method with Improved Generalization through Data Augmentation},
-  author = {Ryumina, Elena and Axyonov, Alexandr and Abdulkadirov, Timur and Koryakovskaya, Darya and Gorovaya, Svetlana and Bykova, Anna and Vikhorev, Dmitry and Ryumin, Dmitry},
+  title   = {BiBiER: A Bilingual Bimodal Emotion Recognition Method with Improved Generalization through Data Augmentation},
+  author  = {Ryumina, Elena and Axyonov, Alexandr and Abdulkadirov, Timur and Koryakovskaya, Darya and Gorovaya, Svetlana and Bykova, Anna and Vikhorev, Dmitry and Ryumin, Dmitry},
   journal = {Expert Systems with Applications},
-  year = {2025}
+  year    = {2025},
+  note    = {Under review}
 }
+
