@@ -1,25 +1,25 @@
 # ESWA_2025
 
-## Обучение аудио-модальности
+## Audio Modality Training
 
-В качестве энкодеров выступали:
-- wav2vec2 (https://huggingface.co/audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim)
-- ExHuBERT (https://huggingface.co/amiriparian/ExHuBERT)
+The following pretrained encoders were used for acoustic feature extraction:
+- [`wav2vec2`](https://huggingface.co/audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim)
+- [`ExHuBERT`](https://huggingface.co/amiriparian/ExHuBERT)
 
-В рамках каждого энкодера проводились эксперименты с обучением трех моделей: LSTM, Transformer, Mamba с различными архитектурами и гиперпараметрами
+For each encoder, experiments were conducted with three model types — LSTM, Transformer, and Mamba — using various architectures and hyperparameter settings.
 
-### 1) wav2vec2:
+### 1) wav2vec2
 
-- Файл [train_wav2vec2.ipynb](./train_wav2vec2.ipynb) содержит сетку экспериментов с моделями на эмбедингах, полученных с помощью wav2vec2.
+- The file [`train_wav2vec2.ipynb`](./train_wav2vec2.ipynb) contains a full experiment grid based on embeddings extracted using wav2vec2.
 
-### 2) ExHuBERT:
+### 2) ExHuBERT
 
-- Файл [train_hubert.ipynb](./train_hubert.ipynb) содержит сетку экспериментов с моделями на эмбедингах, полученных с помощью ExHuBERT.
+- The file [`train_hubert.ipynb`](./train_hubert.ipynb) contains a similar experiment grid for models trained on ExHuBERT embeddings.
 
-### Итоги экспериментов:
+### Experimental Results
 
-Лучшие результаты на каждой из моделей показал wav2vec2, в частности наиболее высокие метрики среди моделей показывают различные варианты mamba.
+Across all model types, wav2vec2-based embeddings consistently yielded the best results. Among the models tested, variants of Mamba achieved the highest performance metrics.
 
-- Файл [best_model.ipynb](./best_model.ipynb) содержит пример использования лучшей модели на аудиофайле
+- The file [`best_model.ipynb`](./best_model.ipynb) provides an example of how to apply the best-performing model to an audio sample.
 
-- В папке info лежат таблицы по обучению и результатам
+- The `info` directory contains training logs and performance tables.
