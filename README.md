@@ -1,31 +1,19 @@
 # BiBiER: A Bilingual Bimodal Emotion Recognition Method with Improved Generalization through Data Augmentation
 
-This repository accompanies the publication in **Expert Systems with Applications (ESWA), 2025**:
+## Multimodal Training Pipeline (`train` branch)
 
-> Elena Ryumina, Alexandr Axyonov, Timur Abdulkadirov, Darya Koryakovskaya, Svetlana Gorovaya, Anna Bykova, Dmitry Vikhorev, Dmitry Ryumin
-> HSE University, St. Petersburg
+This branch contains the complete training pipeline for the BiBiER system. It serves as the central hub for model development and evaluation.
 
----
+**Key features:**
+- Combines the best-performing feature extractors from text (`Jina + Mamba`) and audio (`wav2vec2 + Mamba`)
+- Implements multimodal fusion strategies (e.g., early and late fusion)
+- Includes training, validation, and evaluation routines across the MELD and RESD corpora
+- Uses precomputed embeddings for reproducibility and training efficiency
+- Final results reported in the paper are derived from experiments in this branch
 
-## 🧠 Abstract
+ Notebooks and scripts in this branch provide a step-by-step workflow from feature loading to final model evaluation.
 
-Emotion Recognition (ER) is essential for real-world human-computer interaction, but multimodal systems that use audio, text, and video are often too complex for practical applications. Bimodal audio-text systems provide a more feasible balance between accuracy and efficiency, particularly in applications where visual input is either unavailable or impractical. This research introduces a bilingual bimodal emotion recognition (BER) s system that integrates Mamba-based audio and text encoders within a Transformer-based cross-modal fusion. This architecture enables the system to improve its generalizability across an English-Russian corpus, comprising the MELD and RESD corpora. Bilingual bimodal fusion significantly outperforms the unimodal bilingual baselines (UAR=38.54% vs. 36.17% vs. 28.00% on MELD and UAR=67.89% vs. 37.20% vs. 60.79% on RESD). Moreover, the performance of the attention mechanism used for bimodal fusion depends on the corpus. Transformer-based attention is sufficient for shorter utterances in MELD, whereas Transformer- and graph-based attention yields better results for longer sequences in RESD. We also propose novel data augmentation strategies, including SDS and LS-LLM. The results show corpus-specific benefits: SDS improves performance on MELD, which contains utterances with variable durations; LS-LLM enhances results on RESD, which contains utterances with multiple emotional expressions. The combined use of both augmentation methods yields improvements across both corpora. Our multi-corpus training demonstrates strong bilingual generalization, while the single-corpus setup outperforms existing SOTA methods, achieving WF1=68.31% on MELD and WF1=85.25% on RESD.
-
----
-
-## 📊 Key Features
-
-- A novel Bilingual Bimodal Emotion Recognition Model for English-Russian generalization.
-
-- A novel Transformer-based Cross-Modal Fusion Strategy for capturing intra- and inter- spatiotemporal audio-text features.
-
-- A novel Stacked Data Sampling Strategy for merging same-label utterances into richer fixed-length emotional segments.
-
-- A novel LLM-based Label Smoothing Strategy for correcting ambiguous or multi-emotion labels via soft distributions.
-
----
-
-### Template-Based Utterance Generation
+### TUG: Template-Based Utterance Generation
 
 **Description:**
 This prompt is designed for generating structured emotional utterance templates using a large language model (LLM), based on the style and tone of the MELD corpus (Multimodal EmotionLines Dataset). The generated content is used to create synthetic dialogue data for tasks such as emotion classification, expressive text-to-speech (TTS), and multimodal affective computing.
@@ -122,16 +110,3 @@ Expected Output (sample):
 This prompt can be used in any fine-tuning or pseudo-labeling loop to dynamically generate soft labels aligned with LLM-informed emotion inference.
 
 ---
-
-
-## 📝 Citation
-
-If you use this work, please cite:
-
-```bibtex
-@article{ryumina2025ber,
-  title = {BiBiER: A Bilingual Bimodal Emotion Recognition Method with Improved Generalization through Data Augmentation},
-  author = {Ryumina, Elena and Axyonov, Alexandr and Abdulkadirov, Timur and Koryakovskaya, Darya and Gorovaya, Svetlana and Bykova, Anna and Vikhorev, Dmitry and Ryumin, Dmitry},
-  journal = {Expert Systems with Applications},
-  year = {2025}
-}
