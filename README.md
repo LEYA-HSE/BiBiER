@@ -8,6 +8,18 @@ This repository accompanies the publication in **Expert Systems with Application
 
 ---
 
+## Demo
+
+An interactive demo of the **BiBiER** system is available on **Hugging Face Spaces**:  
+👉 [BiBiER](https://huggingface.co/spaces/DmitryRyumin/BiBiER)
+
+This web app allows you to upload or record speech in Russian or English and receive emotion predictions based on:
+- 🎧 Acoustic features (audio-based analysis)
+- 📝 Transcribed content (text-based analysis)
+- 🔄 Bimodal fusion (audio + text integration)
+
+---
+
 ## 🧠 Abstract
 
 Emotion Recognition (ER) is essential for real-world human-computer interaction, but multimodal systems that use audio, text, and video are often too complex for practical applications. Bimodal audio-text systems provide a more feasible balance between accuracy and efficiency, particularly in applications where visual input is either unavailable or impractical. This research introduces a bilingual bimodal emotion recognition (BER) s system that integrates Mamba-based audio and text encoders within a Transformer-based cross-modal fusion. This architecture enables the system to improve its generalizability across an English-Russian corpus, comprising the MELD and RESD corpora. Bilingual bimodal fusion significantly outperforms the unimodal bilingual baselines (UAR=38.54% vs. 36.17% vs. 28.00% on MELD and UAR=67.89% vs. 37.20% vs. 60.79% on RESD). Moreover, the performance of the attention mechanism used for bimodal fusion depends on the corpus. Transformer-based attention is sufficient for shorter utterances in MELD, whereas Transformer- and graph-based attention yields better results for longer sequences in RESD. We also propose novel data augmentation strategies, including SDS and LS-LLM. The results show corpus-specific benefits: SDS improves performance on MELD, which contains utterances with variable durations; LS-LLM enhances results on RESD, which contains utterances with multiple emotional expressions. The combined use of both augmentation methods yields improvements across both corpora. Our multi-corpus training demonstrates strong bilingual generalization, while the single-corpus setup outperforms existing SOTA methods, achieving WF1=68.31% on MELD and WF1=85.25% on RESD.
