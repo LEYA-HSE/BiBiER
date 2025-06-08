@@ -1,6 +1,6 @@
 import sys
 import os
-from generate_synthetic_dataset import generate_from_emotion_csv
+from synthetic_utils.generate_synthetic_dataset import generate_from_emotion_csv
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
