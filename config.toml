@@ -73,7 +73,7 @@ save_best_model = false
 save_prepared_data = true # сохранять извлеченные признаки (эмбеддинги)
 save_feature_path = './features/' # путь для сохранения эмбеддингов
 search_type = "none" # стратегия поиска: "greedy", "exhaustive" или "none"
-path_to_df_ls = 'Phi-4-mini-instruct_emotions_union.csv'  # путь к датафрейму со смягченными метками - Qwen3-4B_emotions_union или Phi-4-mini-instruct_emotions_union
+path_to_df_ls = 'LLM_labels/Phi-4-mini-instruct_emotions_union.csv'  # путь к датафрейму со смягченными метками - Qwen3-4B_emotions_union или Phi-4-mini-instruct_emotions_union
 smoothing_probability = 0.0 # процент использования смягченных меток
 
 # ---------------------------
