@@ -1,0 +1,21 @@
+# ---------------------------
+# Аудио
+# ---------------------------
+[audio]
+sample_rate = 16000           # Целевая частота дискретизации
+wav_length = 4                # Целевая длина (в секундах) для аудио
+save_merged_audio = true
+merged_audio_base_path = "saved_merges"
+merged_audio_suffix = "_merged"
+force_remerge = false
+
+# ---------------------------
+# Whisper и текст
+# ---------------------------
+[text]
+# Если "csv", то мы стараемся брать текст из CSV, если там есть
+# (поле text_column). Если нет - тогда Whisper (если нужно).
+text_column = "text"
+whisper_model = "base"
+whisper_device = "cuda" # Указываем, где запускать Whisper: "cuda" (GPU) или "cpu"
+use_whisper_for_nontrain_if_no_text = true # Если для dev/test в CSV нет текста, нужно ли всё же вызывать Whisper?

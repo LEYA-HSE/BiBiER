@@ -20,7 +20,7 @@ from data_loading.feature_extractor import PretrainedAudioEmbeddingExtractor, Pr
 def main():
 
     #  Грузим конфиг
-    base_config = ConfigLoader("config.toml")
+    base_config = ConfigLoader("configs/")
 
     model_name = base_config.model_name.replace("/", "_").replace(" ", "_").lower()
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')

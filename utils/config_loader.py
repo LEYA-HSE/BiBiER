@@ -3,32 +3,51 @@
 import os
 import toml
 import logging
+import glob
+
+def merge_dicts(a, b):
+    for key, val in b.items():
+        if key in a and isinstance(a[key], dict) and isinstance(val, dict):
+            a[key] = merge_dicts(a[key], val)
+        else:
+            a[key] = val
+    return a
+
+def load_config_dir(config_dir):
+    config = {}
+    toml_files = sorted(glob.glob(os.path.join(config_dir, "*.toml")))
+    for path in toml_files:
+        with open(path, "r", encoding="utf-8") as f:
+            part = toml.load(f)
+            config = merge_dicts(config, part)
+    return config
 
 class ConfigLoader:
     """
-    Класс для загрузки и обработки конфигурации из `config.toml`.
+    Класс для загрузки и обработки конфигурации из `configs`.
     """
 
-    def __init__(self, config_path="config.toml"):
-        if not os.path.exists(config_path):
-            raise FileNotFoundError(f"Файл конфигурации `{config_path}` не найден!")
+    def __init__(self, config_dir="configs/"):
 
-        self.config = toml.load(config_path)
+        if not os.path.exists(config_dir) or not os.path.isdir(config_dir):
+            raise FileNotFoundError(f"Папка конфигурации `{config_dir}` не найдена!")
 
-        # ---------------------------
-        # Общие параметры
-        # ---------------------------
-        self.split = self.config.get("split", "train")
+        self.config = load_config_dir(config_dir)
+        self._load_fields()
+
+    def _load_fields(self):
+
+        cfg = self.config
 
         # ---------------------------
         # Пути к данным
         # ---------------------------
-        self.datasets = self.config.get("datasets", {})
+        self.datasets = cfg.get("datasets", {})
 
         # ---------------------------
         # Пути к синтетическим данным
         # ---------------------------
-        synthetic_data_cfg = self.config.get("synthetic_data", {})
+        synthetic_data_cfg = cfg.get("synthetic_data", {})
         self.use_synthetic_data = synthetic_data_cfg.get("use_synthetic_data", False)
         self.synthetic_path = synthetic_data_cfg.get("synthetic_path", "E:/MELD_S")
         self.synthetic_ratio = synthetic_data_cfg.get("synthetic_ratio", 0.0)
@@ -36,13 +55,13 @@ class ConfigLoader:
         # ---------------------------
         # Модальности и эмоции
         # ---------------------------
-        self.modalities = self.config.get("modalities", ["audio"])
-        self.emotion_columns = self.config.get("emotion_columns", ["anger", "disgust", "fear", "happy", "neutral", "sad", "surprise"])
+        self.modalities = cfg.get("modalities", ["audio"])
+        self.emotion_columns = cfg.get("emotion_columns", ["anger", "disgust", "fear", "happy", "neutral", "sad", "surprise"])
 
         # ---------------------------
         # DataLoader
         # ---------------------------
-        dataloader_cfg = self.config.get("dataloader", {})
+        dataloader_cfg = cfg.get("dataloader", {})
         self.num_workers = dataloader_cfg.get("num_workers", 0)
         self.shuffle = dataloader_cfg.get("shuffle", True)
         self.prepare_only = dataloader_cfg.get("prepare_only", False)
@@ -50,7 +69,7 @@ class ConfigLoader:
         # ---------------------------
         # Аудио
         # ---------------------------
-        audio_cfg = self.config.get("audio", {})
+        audio_cfg = cfg.get("audio", {})
         self.sample_rate = audio_cfg.get("sample_rate", 16000)
         self.wav_length = audio_cfg.get("wav_length", 2)
         self.save_merged_audio = audio_cfg.get("save_merged_audio", True)
@@ -61,8 +80,7 @@ class ConfigLoader:
         # ---------------------------
         # Whisper / Текст
         # ---------------------------
-        text_cfg = self.config.get("text", {})
-        self.text_source = text_cfg.get("source", "csv")
+        text_cfg = cfg.get("text", {})
         self.text_column = text_cfg.get("text_column", "text")
         self.whisper_model = text_cfg.get("whisper_model", "tiny")
         self.max_text_tokens = text_cfg.get("max_tokens", 15)
@@ -72,7 +90,7 @@ class ConfigLoader:
         # ---------------------------
         # Тренировка: общие
         # ---------------------------
-        train_general = self.config.get("train", {}).get("general", {})
+        train_general = cfg.get("train", {}).get("general", {})
         self.random_seed = train_general.get("random_seed", 42)
         self.subset_size = train_general.get("subset_size", 0)
         self.merge_probability = train_general.get("merge_probability", 0)
@@ -89,7 +107,7 @@ class ConfigLoader:
         # ---------------------------
         # Тренировка: параметры модели
         # ---------------------------
-        train_model = self.config.get("train", {}).get("model", {})
+        train_model = cfg.get("train", {}).get("model", {})
         self.model_name = train_model.get("model_name", "BiFormer")
         self.hidden_dim = train_model.get("hidden_dim", 256)
         self.hidden_dim_gated = train_model.get("hidden_dim_gated", 256)
@@ -107,7 +125,7 @@ class ConfigLoader:
         # ---------------------------
         # Тренировка: оптимизатор
         # ---------------------------
-        train_optimizer = self.config.get("train", {}).get("optimizer", {})
+        train_optimizer = cfg.get("train", {}).get("optimizer", {})
         self.optimizer = train_optimizer.get("optimizer", "adam")
         self.lr = train_optimizer.get("lr", 1e-4)
         self.weight_decay = train_optimizer.get("weight_decay", 0.0)
@@ -116,14 +134,14 @@ class ConfigLoader:
         # ---------------------------
         # Тренировка: шедулер
         # ---------------------------
-        train_scheduler = self.config.get("train", {}).get("scheduler", {})
+        train_scheduler = cfg.get("train", {}).get("scheduler", {})
         self.scheduler_type = train_scheduler.get("scheduler_type", "plateau")
         self.warmup_ratio = train_scheduler.get("warmup_ratio", 0.1)
 
         # ---------------------------
         # Эмбеддинги
         # ---------------------------
-        emb_cfg = self.config.get("embeddings", {})
+        emb_cfg = cfg.get("embeddings", {})
         self.audio_model_name = emb_cfg.get("audio_model", "amiriparian/ExHuBERT")
         self.text_model_name  = emb_cfg.get("text_model", "jinaai/jina-embeddings-v3")
         self.audio_classifier_checkpoint = emb_cfg.get("audio_classifier_checkpoint", "best_audio_model.pt")
@@ -134,23 +152,19 @@ class ConfigLoader:
         self.audio_pooling = emb_cfg.get("audio_pooling", None)
         self.text_pooling  = emb_cfg.get("text_pooling", None)
         self.max_tokens = emb_cfg.get("max_tokens", 256)
-        self.emb_device = emb_cfg.get("device", "cuda")
+        self.emb_device = emb_cfg.get("emb_device", "cuda")
 
         # ---------------------------
         # Синтетика
         # ---------------------------
-        # textgen_cfg = self.config.get("textgen", {})
+        # textgen_cfg = cfg.get("textgen", {})
         # self.model_name = textgen_cfg.get("model_name", "deepseek-ai/DeepSeek-R1-Distill-Llama-8B")
         # self.max_new_tokens = textgen_cfg.get("max_new_tokens", 50)
         # self.temperature = textgen_cfg.get("temperature", 1.0)
         # self.top_p = textgen_cfg.get("top_p", 0.95)
 
-        if __name__ == "__main__":
-            self.log_config()
-
     def log_config(self):
         logging.info("=== CONFIGURATION ===")
-        logging.info(f"Split: {self.split}")
         logging.info(f"Datasets loaded: {list(self.datasets.keys())}")
         for name, ds in self.datasets.items():
             logging.info(f"[Dataset: {name}]")

@@ -1,0 +1,11 @@
+[embeddings]
+# audio_model = "amiriparian/ExHuBERT"  # Hugging Face имя модели для аудио
+audio_model = "audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim"  # Hugging Face имя модели для аудио
+audio_classifier_checkpoint = "best_audio_model_2.pt"
+text_classifier_checkpoint = "best_text_model.pth"
+text_model = "jinaai/jina-embeddings-v3"  # Hugging Face имя модели для текста
+audio_embedding_dim = 256  # размерность аудио-эмбеддинга
+text_embedding_dim = 1024   # размерность текст-эмбеддинга
+emb_normalize = false  # нормализовать ли вектор L2-нормой
+max_tokens = 95         # ограничение на длину текста (токенов) при токенизации
+emb_device = "cuda"          # "cuda" или "cpu", куда грузить модель

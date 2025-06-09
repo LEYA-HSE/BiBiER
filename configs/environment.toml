@@ -1,0 +1,34 @@
+# ---------------------------
+# Список модальностей и эмоций
+# ---------------------------
+
+modalities = ["audio"]
+# emotion_columns = ["neutral", "happy", "sad", "anger", "surprise", "disgust", "fear"]
+emotion_columns = ["anger", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
+
+# ---------------------------
+# Настройки корпусов данных
+# ---------------------------
+
+[datasets.meld]
+base_dir = "E:/MELD"
+csv_path = "{base_dir}/meld_{split}_labels.csv"
+wav_dir  = "{base_dir}/wavs/{split}"
+
+[datasets.resd]
+base_dir = "E:/RESD"
+csv_path = "{base_dir}/resd_{split}_labels.csv"
+wav_dir  = "{base_dir}/wavs/{split}"
+
+[synthetic_data]
+use_synthetic_data = false
+synthetic_path = "E:/MELD_S"
+synthetic_ratio = 0.005
+
+# ---------------------------
+# DataLoader параметры
+# ---------------------------
+[dataloader]
+num_workers = 0
+shuffle = true
+prepare_only = false

@@ -1,64 +1,4 @@
 # ---------------------------
-# Настройки корпусов данных
-# ---------------------------
-
-[datasets.meld]
-base_dir = "E:/MELD"
-csv_path = "{base_dir}/meld_{split}_labels.csv"
-wav_dir  = "{base_dir}/wavs/{split}"
-
-[datasets.resd]
-base_dir = "E:/RESD"
-csv_path = "{base_dir}/resd_{split}_labels.csv"
-wav_dir  = "{base_dir}/wavs/{split}"
-
-[synthetic_data]
-use_synthetic_data = false
-synthetic_path = "E:/MELD_S"
-synthetic_ratio = 0.005
-
-# ---------------------------
-# Список модальностей и эмоций
-# ---------------------------
-modalities = ["audio"]
-# emotion_columns = ["neutral", "happy", "sad", "anger", "surprise", "disgust", "fear"]
-emotion_columns = ["anger", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
-
-# ---------------------------
-# DataLoader параметры
-# ---------------------------
-[dataloader]
-num_workers = 0
-shuffle = true
-prepare_only = false
-
-# ---------------------------
-# Аудио
-# ---------------------------
-[audio]
-sample_rate = 16000           # Целевая частота дискретизации
-wav_length = 4                # Целевая длина (в секундах) для аудио
-save_merged_audio = true
-merged_audio_base_path = "saved_merges"
-merged_audio_suffix = "_merged"
-force_remerge = false
-
-# ---------------------------
-# Whisper и текст
-# ---------------------------
-[text]
-# Если "csv", то мы стараемся брать текст из CSV, если там есть
-# (поле text_column). Если нет - тогда Whisper (если нужно).
-text_column = "text"
-whisper_model = "base"
-
-# Указываем, где запускать Whisper: "cuda" (GPU) или "cpu"
-whisper_device = "cuda"
-
-# Если для dev/test в CSV нет текста, нужно ли всё же вызывать Whisper?
-use_whisper_for_nontrain_if_no_text = true
-
-# ---------------------------
 # Общие параметры тренировки
 # ---------------------------
 [train.general]
@@ -70,7 +10,7 @@ num_epochs = 75           # число эпох тренировки
 max_patience = 10        # максимальное число эпох без улучшений (для Early Stopping)
 save_best_model = false
 save_prepared_data = true # сохранять извлеченные признаки (эмбеддинги)
-save_feature_path = './features/' # путь для сохранения эмбеддингов
+save_feature_path = 'features/' # путь для сохранения эмбеддингов
 search_type = "none" # стратегия поиска: "greedy", "exhaustive" или "none"
 path_to_df_ls = 'LLM_labels/Phi-4-mini-instruct_emotions_union.csv'  # путь к датафрейму со смягченными метками - Qwen3-4B_emotions_union или Phi-4-mini-instruct_emotions_union
 smoothing_probability = 0.0 # процент использования смягченных меток
@@ -108,25 +48,3 @@ momentum = 0.9            # momentum (используется только в S
 [train.scheduler]
 scheduler_type = "plateau" # тип шедулера: "none", "plateau", "cosine", "onecycle" ил  и HuggingFace-стиль ("huggingface_linear", "huggingface_cosine" "huggingface_cosine_with_restarts" и т.д.)
 warmup_ratio = 0.1         # отношение количества warmup-итераций к общему числу шагов (0.1 = 10%)
-
-[embeddings]
-# audio_model = "amiriparian/ExHuBERT"  # Hugging Face имя модели для аудио
-audio_model = "audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim"  # Hugging Face имя модели для аудио
-audio_classifier_checkpoint = "best_audio_model_2.pt"
-text_classifier_checkpoint = "best_text_model.pth"
-text_model = "jinaai/jina-embeddings-v3"  # Hugging Face имя модели для текста
-audio_embedding_dim = 256  # размерность аудио-эмбеддинга
-text_embedding_dim = 1024   # размерность текст-эмбеддинга
-emb_normalize = false  # нормализовать ли вектор L2-нормой
-max_tokens = 95         # ограничение на длину текста (токенов) при токенизации
-emb_device = "cuda"          # "cuda" или "cpu", куда грузить модель
-
-# audio_pooling = "mean"        # "mean", "cls", "max", "min", "last", "attention"
-# text_pooling = "cls"          # "mean", "cls", "max", "min", "last", "sum", "attention"
-
-[textgen]
-# model_name = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"  # deepseek-ai/deepseek-llm-1.3b-base или любая другая модель
-# model_name = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"  # deepseek-ai/deepseek-llm-1.3b-base или любая другая модель
-max_new_tokens = 50
-temperature = 1.0
-top_p = 0.95
