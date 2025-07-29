@@ -1,6 +1,6 @@
 # BiBiER: A Bilingual Bimodal Emotion Recognition Method with Improved Generalization through Data Augmentation
 
-This repository accompanies the publication in **Expert Systems with Applications (ESWA), 2025**:
+This repository accompanies the publication in **International Journal of Multimedia Information Retrieval, 2025**:
 
 > [Elena Ryumina](https://scholar.google.com/citations?user=DOBkQssAAAAJ), [Alexandr Axyonov](https://scholar.google.com/citations?user=Hs95wd4AAAAJ), Timur Abdulkadirov, Darya Koryakovskaya, Svetlana Gorovaya, Anna Bykova, Dmitry Vikhorev, [Dmitry Ryumin](https://scholar.google.com/citations?user=LrTIp5IAAAAJ)
 > 
@@ -44,11 +44,11 @@ This repository is organized into several branches to support different componen
 
 | Branch | Description |
 |--------|-------------|
-| [`main`](https://github.com/LEYA-HSE/ESWA_2025/tree/main) | Default branch with final experimental results and app for the ESWA 2025 publication. |
-| [`LLMs`](https://github.com/LEYA-HSE/ESWA_2025/tree/LLMs) | Large Language Model (LLM)-based emotion prediction from text. Includes evaluations of Qwen3-4B and Phi-4-mini-instruct on MELD and RESD. [[View results ↗](https://github.com/LEYA-HSE/ESWA_2025/tree/LLMs)] |
-| [`audio-based`](https://github.com/LEYA-HSE/ESWA_2025/tree/audio-based) | Audio modality experiments using wav2vec2 and ExHuBERT as feature extractors. Includes training of LSTM, Transformer, and Mamba models with different architectures. Best results achieved using Mamba on wav2vec2 embeddings. [[See summary ↗](https://github.com/LEYA-HSE/ESWA_2025/tree/audio-based)] |
-| [`text-based`](https://github.com/LEYA-HSE/ESWA_2025/tree/text-based) | Text-based emotion recognition using Jina embeddings and Mamba classifier. Includes evaluation on MELD and RESD with UAR. [[See results ↗](https://github.com/LEYA-HSE/ESWA_2025/tree/text-based)] |
-| [`train`](https://github.com/LEYA-HSE/ESWA_2025/tree/train) | Core training pipeline for BiBiER. Integrates precomputed features from the best-performing audio and text models (e.g., wav2vec2 + Mamba, Jina + Mamba). Includes scripts for multimodal fusion, fine-tuning, and evaluation across MELD and RESD. Serves as the foundation for all final experiments reported in the paper. |
+| [`main`](https://github.com/LEYA-HSE/BiBiER/tree/main) | Default branch with final experimental results and app for the International Journal of Multimedia Information Retrieval 2025 publication. |
+| [`LLMs`](https://github.com/LEYA-HSE/BiBiER/tree/LLMs) | Large Language Model (LLM)-based emotion prediction from text. Includes evaluations of Qwen3-4B and Phi-4-mini-instruct on MELD and RESD. [[View results ↗](https://github.com/LEYA-HSE/BiBiER/tree/LLMs)] |
+| [`audio-based`](https://github.com/LEYA-HSE/BiBiER/tree/audio-based) | Audio modality experiments using wav2vec2 and ExHuBERT as feature extractors. Includes training of LSTM, Transformer, and Mamba models with different architectures. Best results achieved using Mamba on wav2vec2 embeddings. [[See summary ↗](https://github.com/LEYA-HSE/BiBiER/tree/audio-based)] |
+| [`text-based`](https://github.com/LEYA-HSE/BiBiER/tree/text-based) | Text-based emotion recognition using Jina embeddings and Mamba classifier. Includes evaluation on MELD and RESD with UAR. [[See results ↗](https://github.com/LEYA-HSE/BiBiER/tree/text-based)] |
+| [`train`](https://github.com/LEYA-HSE/BiBiER/tree/train) | Core training pipeline for BiBiER. Integrates precomputed features from the best-performing audio and text models (e.g., wav2vec2 + Mamba, Jina + Mamba). Includes scripts for multimodal fusion, fine-tuning, and evaluation across MELD and RESD. Serves as the foundation for all final experiments reported in the paper. |
 
 ## 📝 Citation
 
@@ -58,7 +58,7 @@ If you use this work, please cite the following paper (currently under review):
 @article{ryumina2025ber,
   title   = {BiBiER: A Bilingual Bimodal Emotion Recognition Method with Improved Generalization through Data Augmentation},
   author  = {Ryumina, Elena and Axyonov, Alexandr and Abdulkadirov, Timur and Koryakovskaya, Darya and Gorovaya, Svetlana and Bykova, Anna and Vikhorev, Dmitry and Ryumin, Dmitry},
-  journal = {Expert Systems with Applications},
+  journal = {International Journal of Multimedia Information Retrieval},
   year    = {2025},
   note    = {Under review}
 }
